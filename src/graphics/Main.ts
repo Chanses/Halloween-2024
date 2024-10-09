@@ -13,6 +13,7 @@ import {
 } from 'three';
 import { FrameHandler } from '../helpers/FrameHandler';
 import { Controls } from './Controls/Controls';
+import { damp } from '../helpers/MathUtils';
 
 export class Main {
     /**
@@ -61,10 +62,12 @@ export class Main {
 
     private readonly ambLight: AmbientLight;
 
+    private readonly cameraPos: Vector3 = new Vector3();
+
     public constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
-        this.renderer.shadowMap.enabled = true;
+        // this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = PCFShadowMap;
 
         this.camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
@@ -76,12 +79,15 @@ export class Main {
         this.hero.castShadow = true;
         this.hero.receiveShadow = true;
 
-        this.floor = new Mesh(new PlaneGeometry(30, 30), new MeshPhongMaterial({ color: 'white' }));
+        this.floor = new Mesh(
+            new PlaneGeometry(30, 30),
+            new MeshPhongMaterial({ color: '#937474' }),
+        );
         this.floor.rotation.x = (Math.PI / 180) * -90;
         this.floor.receiveShadow = true;
 
         this.dirLight = new DirectionalLight();
-        this.dirLight.position.set(20, 20, 20);
+        this.dirLight.position.set(50, 50, 50);
         this.dirLight.castShadow = true;
 
         this.ambLight = new AmbientLight();
@@ -105,7 +111,19 @@ export class Main {
     private update(_delta: number) {
         this.render();
         this.controls.updateByControls(_delta);
-        this.camera.position.copy(this.hero.position).add(new Vector3(0, 8, 8));
+
+        // Дает эффект подхода к стене за камерой. Требуются стены -_-
+        // this.cameraPos.copy(this.hero.position).add(new Vector3(0, 8, 8));
+        // this.camera.position.clamp(this.hero.position, this.cameraPos);
+
+        const cameraLambda = 0.04;
+        this.cameraPos.copy(this.hero.position).add(new Vector3(0, 8, 8));
+        this.camera.position.set(
+            damp(this.camera.position.x, this.cameraPos.x, cameraLambda, _delta),
+            damp(this.camera.position.y, this.cameraPos.y, cameraLambda, _delta),
+            damp(this.camera.position.z, this.cameraPos.z, cameraLambda, _delta),
+        );
+
         this.camera.lookAt(this.hero.position);
     }
 

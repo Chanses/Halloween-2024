@@ -1,7 +1,8 @@
 import { AxesHelper, Mesh } from 'three';
-import { clamp, damp } from '../../helpers/MathUtils';
+import { clamp, damp, euclideanModulo } from '../../helpers/MathUtils';
 
 enum Direction {
+    Idle,
     Top,
     Down,
     Left,
@@ -13,18 +14,46 @@ enum Direction {
 }
 
 export class Controls {
+    /**
+     * Меш главного персонажа
+     * @private
+     */
     private readonly hero: Mesh;
 
-    private readonly keys: string[] = [];
+    /**
+     * Нажатые в данный момент клавиши
+     * @private
+     */
+    private keys: string[] = [];
 
+    /**
+     * Направление движения персонажа
+     * @private
+     */
     private direction: Direction | null = null;
 
+    /**
+     * Нажата ли какая-либо клавиша
+     * @private
+     */
     private pressed: boolean = false;
 
+    /**
+     * Текущий поворот персонажа
+     * @private
+     */
     private rotation: number = 0;
 
+    /**
+     * Значение к которому стремится поворот
+     * @private
+     */
     private angle: number = 0;
 
+    /**
+     * Ускорение персонажа
+     * @private
+     */
     private tilda: number = 0;
 
     private readonly DEBUG_DIRECTION: boolean = true;
@@ -43,6 +72,11 @@ export class Controls {
         window.addEventListener('keyup', this.handleKeyUp);
     }
 
+    /**
+     * Удаление нажатой клавиши
+     * @param key
+     * @private
+     */
     private deleteKey(key: string) {
         const idx = this.keys.indexOf(key);
 
@@ -51,6 +85,11 @@ export class Controls {
         }
     }
 
+    /**
+     * Добавлнение клавиши
+     * @param key
+     * @private
+     */
     private addKey(key: string) {
         const idx = this.keys.indexOf(key);
 
@@ -59,6 +98,12 @@ export class Controls {
         }
     }
 
+    /**
+     * Проверка клавиши на нажатие
+     * @param firstKey
+     * @param secondKey
+     * @private
+     */
     private checkKeyPressed(firstKey: string, secondKey?: string) {
         const isFirst = this.keys.indexOf(firstKey);
         if (!secondKey) {
@@ -70,9 +115,12 @@ export class Controls {
         return isFirst !== -1 && isSecond !== -1;
     }
 
+    /**
+     * Обработчик отпускания клавиши
+     * @param e
+     * @private
+     */
     private handleKeyUp(e: KeyboardEvent) {
-        this.pressed = false;
-
         switch (e.key.toLowerCase()) {
             case 'w':
             case 'arrowup':
@@ -93,8 +141,19 @@ export class Controls {
             default:
                 break;
         }
+
+        if (this.keys.length === 0) {
+            this.pressed = false;
+        } else {
+            this.setDirection();
+        }
     }
 
+    /**
+     * Обработчик нажатия клавиши
+     * @param e
+     * @private
+     */
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
         switch (e.key.toLowerCase()) {
@@ -118,10 +177,17 @@ export class Controls {
                 break;
         }
 
+        this.setDirection();
         if (this.keys.length > 2) {
             this.keys.splice(0, 1);
         }
+    }
 
+    /**
+     * Установка направления движения
+     * @private
+     */
+    private setDirection() {
         if (this.keys.length === 1) {
             if (this.checkKeyPressed('top')) {
                 this.direction = Direction.Top;
@@ -147,24 +213,35 @@ export class Controls {
         }
     }
 
+    /**
+     * Обновление поворота персонажа
+     * @param delta
+     * @private
+     */
     private updateRotation(delta: number) {
-        this.rotation = damp(this.rotation, (Math.PI / 180) * this.angle, 0.08, delta);
+        this.rotation = damp(this.rotation, (Math.PI / 180) * this.angle, 0.1, delta);
         this.hero.rotation.y = this.rotation;
     }
 
+    /**
+     * Установка угла к которому нужно повернуться
+     * @param angle
+     * @private
+     */
     private setAngle(angle: number) {
-        // let closestAng = angle;
-        //
-        // if (this.angle !== angle && Math.abs(this.angle - angle) > 180) {
-        //     closestAng = angle - 360;
-        // }
-
-        // TODO Нужно посчитать ближайший угол куда доворачивать
-        this.angle = angle;
+        let sub = euclideanModulo(angle - this.angle, 360);
+        if (sub > 180) {
+            sub -= 360;
+        }
+        this.angle += sub;
     }
 
+    /**
+     * Обработчик передвижения
+     * @private
+     */
     private updateMovement() {
-        const speed = 0.1;
+        const speed = 0.05;
 
         switch (this.direction) {
             case Direction.Top:
@@ -173,7 +250,7 @@ export class Controls {
                 break;
             case Direction.Down:
                 this.hero.position.z += this.tilda * speed;
-                this.setAngle(-180);
+                this.setAngle(180);
                 break;
             case Direction.Right:
                 this.hero.position.x += this.tilda * speed;
@@ -181,12 +258,12 @@ export class Controls {
                 break;
             case Direction.Left:
                 this.hero.position.x -= this.tilda * speed;
-                this.setAngle(-270);
+                this.setAngle(90);
                 break;
             case Direction.TopLeft:
                 this.hero.position.z -= this.tilda * speed;
                 this.hero.position.x -= this.tilda * speed;
-                this.setAngle(-315);
+                this.setAngle(45);
                 break;
             case Direction.TopRight:
                 this.hero.position.z -= this.tilda * speed;
@@ -208,9 +285,13 @@ export class Controls {
         }
     }
 
+    /**
+     * Отрисовка изменений
+     * @param delta
+     */
     public updateByControls(delta: number) {
         const speed = 0.05;
-        if (this.pressed) {
+        if (this.pressed && this.keys.length > 0) {
             this.tilda = clamp(this.tilda + delta * speed * 0.5, 0, 1);
         } else {
             this.tilda = clamp(this.tilda - delta * speed, 0, 1);
@@ -218,9 +299,14 @@ export class Controls {
 
         this.updateMovement();
         this.updateRotation(delta);
+        console.debug(this.pressed, this.tilda);
     }
 
+    /**
+     * Сброс ресурсов
+     */
     public dispose() {
+        this.keys = [];
         window.removeEventListener('keydown', this.handleKeyPress);
         window.removeEventListener('keyup', this.handleKeyUp);
     }
