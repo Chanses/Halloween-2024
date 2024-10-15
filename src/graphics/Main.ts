@@ -6,7 +6,6 @@ import {
     MeshPhongMaterial,
     PCFShadowMap,
     PerspectiveCamera,
-    PlaneGeometry,
     Scene,
     Vector3,
     WebGLRenderer,
@@ -14,6 +13,7 @@ import {
 import { FrameHandler } from '../helpers/FrameHandler';
 import { Controls } from './Controls/Controls';
 import { damp } from '../helpers/MathUtils';
+import { Terrain } from './Terrain/Terrain';
 
 export class Main {
     /**
@@ -54,8 +54,6 @@ export class Main {
      */
     private readonly frameHandler: FrameHandler;
 
-    private readonly floor: Mesh;
-
     private readonly hero: Mesh;
 
     private readonly dirLight: DirectionalLight;
@@ -64,6 +62,8 @@ export class Main {
 
     private readonly cameraPos: Vector3 = new Vector3();
 
+    private readonly terrain: Terrain;
+
     public constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -71,7 +71,7 @@ export class Main {
         this.renderer.shadowMap.type = PCFShadowMap;
 
         this.camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
-        this.camera.position.set(0, 10, 0);
+        this.camera.position.set(0, 15, 0);
         this.scene = new Scene();
 
         this.hero = new Mesh(new BoxGeometry(), new MeshPhongMaterial({ color: 'red' }));
@@ -79,20 +79,13 @@ export class Main {
         this.hero.castShadow = true;
         this.hero.receiveShadow = true;
 
-        this.floor = new Mesh(
-            new PlaneGeometry(30, 30),
-            new MeshPhongMaterial({ color: '#937474' }),
-        );
-        this.floor.rotation.x = (Math.PI / 180) * -90;
-        this.floor.receiveShadow = true;
-
         this.dirLight = new DirectionalLight();
         this.dirLight.position.set(50, 50, 50);
         this.dirLight.castShadow = true;
 
         this.ambLight = new AmbientLight();
 
-        this.scene.add(this.camera, this.floor, this.hero, this.dirLight, this.ambLight);
+        this.scene.add(this.camera, this.hero, this.dirLight, this.ambLight);
 
         this.update = this.update.bind(this);
         this.resize = this.resize.bind(this);
@@ -100,6 +93,7 @@ export class Main {
         this.resizeObserver.observe(this.canvas);
         this.frameHandler = new FrameHandler(this.update);
         this.controls = new Controls(this.hero);
+        this.terrain = new Terrain(this.scene);
         this.resize();
         this.frameHandler.start();
     }
@@ -111,13 +105,15 @@ export class Main {
     private update(_delta: number) {
         this.render();
         this.controls.updateByControls(_delta);
+        this.terrain.setHeroPosition(this.controls.getPosition());
+        this.terrain.update(_delta);
 
         // Дает эффект подхода к стене за камерой. Требуются стены -_-
         // this.cameraPos.copy(this.hero.position).add(new Vector3(0, 8, 8));
         // this.camera.position.clamp(this.hero.position, this.cameraPos);
 
-        const cameraLambda = 0.04;
-        this.cameraPos.copy(this.hero.position).add(new Vector3(0, 8, 8));
+        const cameraLambda = 0.2;
+        this.cameraPos.copy(this.hero.position).add(new Vector3(0, 16, 8));
         this.camera.position.set(
             damp(this.camera.position.x, this.cameraPos.x, cameraLambda, _delta),
             damp(this.camera.position.y, this.cameraPos.y, cameraLambda, _delta),
@@ -160,5 +156,6 @@ export class Main {
         this.resizeObserver.disconnect();
         this.frameHandler.stop();
         this.controls.dispose();
+        this.terrain.dispose();
     }
 }

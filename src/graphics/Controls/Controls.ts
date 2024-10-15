@@ -1,4 +1,4 @@
-import { AxesHelper, Mesh } from 'three';
+import { AxesHelper, Mesh, Vector2 } from 'three';
 import { clamp, damp, euclideanModulo } from '../../helpers/MathUtils';
 
 enum Direction {
@@ -241,7 +241,7 @@ export class Controls {
      * @private
      */
     private updateMovement() {
-        const speed = 0.05;
+        const speed = 0.065;
 
         switch (this.direction) {
             case Direction.Top:
@@ -290,7 +290,7 @@ export class Controls {
      * @param delta
      */
     public updateByControls(delta: number) {
-        const speed = 0.05;
+        const speed = 0.08;
         if (this.pressed && this.keys.length > 0) {
             this.tilda = clamp(this.tilda + delta * speed * 0.5, 0, 1);
         } else {
@@ -299,7 +299,15 @@ export class Controls {
 
         this.updateMovement();
         this.updateRotation(delta);
-        console.debug(this.pressed, this.tilda);
+
+        console.debug(this.pressed, this.direction);
+    }
+
+    /**
+     * Получение координат персонажа
+     */
+    public getPosition() {
+        return new Vector2(this.hero.position.x, this.hero.position.z);
     }
 
     /**
