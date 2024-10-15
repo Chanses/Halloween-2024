@@ -1,6 +1,7 @@
-import { Mesh, MeshBasicMaterial, PlaneGeometry, Scene, Vector2 } from 'three';
+import { Mesh, MeshBasicMaterial, PlaneGeometry, Scene, Vector2, Vector3 } from 'three';
 import { Enemies } from '../Enemies/Enemies';
 import { Consumable } from './Consumable';
+import { Hero } from '../Hero/Hero';
 
 export interface SectorProps {
     x: number;
@@ -13,7 +14,7 @@ export class Terrain {
 
     private readonly sectors: Set<SectorProps> = new Set();
 
-    private pos: Vector2 = new Vector2(0, 0);
+    private pos: Vector3 = new Vector3();
 
     private readonly curSector: Vector2 = new Vector2(0, 0);
 
@@ -21,10 +22,10 @@ export class Terrain {
 
     private readonly consumable: Consumable;
 
-    public constructor(scene: Scene) {
+    public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
-        this.consumable = new Consumable(scene);
-        this.enemies = new Enemies(scene);
+        this.consumable = new Consumable(scene, hero);
+        this.enemies = new Enemies(scene, this.consumable);
         this.generateSector(0, 0);
     }
 
@@ -107,7 +108,7 @@ export class Terrain {
         this.consumable.generateExperience({ x, y });
     }
 
-    public setHeroPosition(pos: Vector2) {
+    public setHeroPosition(pos: Vector3) {
         this.pos = pos;
     }
 

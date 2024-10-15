@@ -1,9 +1,6 @@
 import {
     AmbientLight,
-    BoxGeometry,
     DirectionalLight,
-    Mesh,
-    MeshPhongMaterial,
     PCFShadowMap,
     PerspectiveCamera,
     Scene,
@@ -11,9 +8,9 @@ import {
     WebGLRenderer,
 } from 'three';
 import { FrameHandler } from '../helpers/FrameHandler';
-import { Controls } from './Controls/Controls';
 import { damp } from '../helpers/MathUtils';
 import { Terrain } from './Terrain/Terrain';
+import { Hero } from './Hero/Hero';
 
 export class Main {
     /**
@@ -46,15 +43,13 @@ export class Main {
      */
     private readonly scene: Scene;
 
-    private readonly controls: Controls;
-
     /**
      * Frame handler
      * @private
      */
     private readonly frameHandler: FrameHandler;
 
-    private readonly hero: Mesh;
+    private readonly hero: Hero;
 
     private readonly dirLight: DirectionalLight;
 
@@ -74,26 +69,22 @@ export class Main {
         this.camera.position.set(0, 15, 0);
         this.scene = new Scene();
 
-        this.hero = new Mesh(new BoxGeometry(), new MeshPhongMaterial({ color: 'red' }));
-        this.hero.position.y = 0.5;
-        this.hero.castShadow = true;
-        this.hero.receiveShadow = true;
-
         this.dirLight = new DirectionalLight();
         this.dirLight.position.set(50, 50, 50);
         this.dirLight.castShadow = true;
 
         this.ambLight = new AmbientLight();
 
-        this.scene.add(this.camera, this.hero, this.dirLight, this.ambLight);
+        this.hero = new Hero(this.scene);
+
+        this.scene.add(this.camera, this.dirLight, this.ambLight);
 
         this.update = this.update.bind(this);
         this.resize = this.resize.bind(this);
         this.resizeObserver = new ResizeObserver(this.resize);
         this.resizeObserver.observe(this.canvas);
         this.frameHandler = new FrameHandler(this.update);
-        this.controls = new Controls(this.hero);
-        this.terrain = new Terrain(this.scene);
+        this.terrain = new Terrain(this.scene, this.hero);
         this.resize();
         this.frameHandler.start();
     }
@@ -104,8 +95,9 @@ export class Main {
      */
     private update(_delta: number) {
         this.render();
-        this.controls.updateByControls(_delta);
-        this.terrain.setHeroPosition(this.controls.getPosition());
+        this.hero.update(_delta);
+        const heroPos = this.hero.getPosition();
+        this.terrain.setHeroPosition(heroPos);
         this.terrain.update(_delta);
 
         // Дает эффект подхода к стене за камерой. Требуются стены -_-
@@ -113,14 +105,14 @@ export class Main {
         // this.camera.position.clamp(this.hero.position, this.cameraPos);
 
         const cameraLambda = 0.2;
-        this.cameraPos.copy(this.hero.position).add(new Vector3(0, 16, 8));
+        this.cameraPos.copy(heroPos).add(new Vector3(0, 16, 8));
         this.camera.position.set(
             damp(this.camera.position.x, this.cameraPos.x, cameraLambda, _delta),
             damp(this.camera.position.y, this.cameraPos.y, cameraLambda, _delta),
             damp(this.camera.position.z, this.cameraPos.z, cameraLambda, _delta),
         );
 
-        this.camera.lookAt(this.hero.position);
+        this.camera.lookAt(heroPos);
     }
 
     /**
@@ -155,7 +147,7 @@ export class Main {
     public dispose() {
         this.resizeObserver.disconnect();
         this.frameHandler.stop();
-        this.controls.dispose();
         this.terrain.dispose();
+        this.hero.dispose();
     }
 }

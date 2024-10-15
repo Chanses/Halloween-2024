@@ -1,9 +1,16 @@
-import { DodecahedronGeometry, Mesh, MeshBasicMaterial, Scene, Vector2, Vector3 } from 'three';
+import { DodecahedronGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
 import { SECTOR_SIZE, SectorProps } from './Terrain';
+import { Hero } from '../Hero/Hero';
 
 export enum ConsumableItems {
     AidKit,
     Magnet,
+}
+
+export enum Exp {
+    Level1 = 20,
+    Level2 = 40,
+    Level3 = 100,
 }
 
 export class Consumable {
@@ -13,8 +20,11 @@ export class Consumable {
 
     private readonly expSpheres: Mesh[] = [];
 
-    public constructor(scene: Scene) {
+    private readonly hero: Hero;
+
+    public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
+        this.hero = hero;
     }
 
     public generateRandom() {}
@@ -37,14 +47,26 @@ export class Consumable {
         }
     }
 
+    public dropExpSphere(pos: Vector3) {
+        const geo = new DodecahedronGeometry();
+        const mat = new MeshBasicMaterial({ wireframe: true, color: '#5252d5' });
+        const mesh = new Mesh(geo, mat);
+        mesh.scale.setScalar(0.15);
+        mesh.position.copy(pos);
+        this.scene.add(mesh);
+        this.expSpheres.push(mesh);
+    }
+
     private pickExp(idx: number) {
+        console.debug(this.hero);
+        this.hero.addExp(Exp.Level1);
         this.scene.remove(this.expSpheres[idx]);
         this.expSpheres.splice(idx, 1);
     }
 
-    public checkPickUp(pos: Vector2) {
+    public checkPickUp(pos: Vector3) {
         this.expSpheres.forEach((mesh, idx) => {
-            if (mesh.position.distanceTo(new Vector3(pos.x, 0, pos.y)) < 1) {
+            if (mesh.position.distanceTo(pos) < 1) {
                 this.pickExp(idx);
             }
         });

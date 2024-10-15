@@ -289,7 +289,7 @@ export class Controls {
      * Отрисовка изменений
      * @param delta
      */
-    public updateByControls(delta: number) {
+    public update(delta: number) {
         const speed = 0.08;
         if (this.pressed && this.keys.length > 0) {
             this.tilda = clamp(this.tilda + delta * speed * 0.5, 0, 1);
