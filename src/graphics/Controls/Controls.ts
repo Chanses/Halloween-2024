@@ -300,7 +300,7 @@ export class Controls {
         this.updateMovement();
         this.updateRotation(delta);
 
-        console.debug(this.pressed, this.direction);
+        // console.debug(this.pressed, this.direction);
     }
 
     /**

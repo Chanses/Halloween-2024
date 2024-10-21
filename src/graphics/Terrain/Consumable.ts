@@ -58,7 +58,6 @@ export class Consumable {
     }
 
     private pickExp(idx: number) {
-        console.debug(this.hero);
         this.hero.addExp(Exp.Level1);
         this.scene.remove(this.expSpheres[idx]);
         this.expSpheres.splice(idx, 1);

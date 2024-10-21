@@ -11,6 +11,7 @@ import { FrameHandler } from '../helpers/FrameHandler';
 import { damp } from '../helpers/MathUtils';
 import { Terrain } from './Terrain/Terrain';
 import { Hero } from './Hero/Hero';
+import { Timer } from './Timer/Timer';
 
 export class Main {
     /**
@@ -59,7 +60,12 @@ export class Main {
 
     private readonly terrain: Terrain;
 
-    public constructor(canvas: HTMLCanvasElement) {
+    private paused: boolean = false;
+
+    private readonly timer: Timer;
+
+    public constructor(canvas: HTMLCanvasElement, timeEl: HTMLDivElement) {
+        this.timer = new Timer(timeEl);
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
         // this.renderer.shadowMap.enabled = true;
@@ -95,14 +101,11 @@ export class Main {
      */
     private update(_delta: number) {
         this.render();
+        this.timer.update();
         this.hero.update(_delta);
         const heroPos = this.hero.getPosition();
         this.terrain.setHeroPosition(heroPos);
         this.terrain.update(_delta);
-
-        // Дает эффект подхода к стене за камерой. Требуются стены -_-
-        // this.cameraPos.copy(this.hero.position).add(new Vector3(0, 8, 8));
-        // this.camera.position.clamp(this.hero.position, this.cameraPos);
 
         const cameraLambda = 0.2;
         this.cameraPos.copy(heroPos).add(new Vector3(0, 16, 8));
@@ -139,6 +142,17 @@ export class Main {
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(w, h, false);
+    }
+
+    public togglePause() {
+        this.paused = !this.paused;
+
+        if (this.paused) {
+            this.frameHandler.stop();
+        } else {
+            this.timer.updateTimeStart();
+            this.frameHandler.start();
+        }
     }
 
     /**

@@ -47,10 +47,13 @@ export class Enemies {
     }
 
     public update(delta: number, hPos: Vector3) {
+        const enemySpeed = 0.12;
         this.enemies.forEach((enemy, idx) => {
             enemy.lookAt(hPos);
-            const closePos = enemy.position.lerp(hPos, 0.01 * delta);
-            enemy.position.copy(closePos);
+            enemy.position.addScaledVector(
+                hPos.clone().sub(enemy.position).normalize(),
+                enemySpeed * delta,
+            );
 
             if (enemy.position.distanceTo(hPos) < 2) {
                 this.killEnemy(idx);

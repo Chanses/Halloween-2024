@@ -7,7 +7,7 @@ export interface SectorProps {
     x: number;
     y: number;
 }
-export const SECTOR_SIZE: number = 50.0;
+export const SECTOR_SIZE: number = 40.0;
 
 export class Terrain {
     private readonly scene: Scene;
@@ -26,13 +26,15 @@ export class Terrain {
         this.scene = scene;
         this.consumable = new Consumable(scene, hero);
         this.enemies = new Enemies(scene, this.consumable);
+        // this.hero
+
         this.generateSector(0, 0);
     }
 
     private updateCurrentSector() {
-        const { x, y } = this.pos;
+        const { x, z } = this.pos;
         const secX = Math.round(x / SECTOR_SIZE) * SECTOR_SIZE;
-        const secY = Math.round(y / SECTOR_SIZE) * SECTOR_SIZE;
+        const secY = Math.round(z / SECTOR_SIZE) * SECTOR_SIZE;
         this.curSector.set(secX, secY);
     }
 
@@ -117,6 +119,7 @@ export class Terrain {
         this.generateNearSectors();
         this.enemies.update(delta, this.pos);
         this.consumable.checkPickUp(this.pos);
+        // this.hero.update
     }
 
     public dispose() {
