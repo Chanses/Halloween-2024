@@ -47,10 +47,10 @@ export class Hero {
 
     public static pos: Vector3 = new Vector3();
 
-    private static readonly stats: HeroStats = {
+    public static readonly stats: HeroStats = {
         hp: 100,
         maxHp: 100,
-        speed: 0.5,
+        speed: 0.14,
         defend: 0,
     };
 

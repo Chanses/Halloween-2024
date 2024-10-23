@@ -13,7 +13,7 @@ export interface Enemy {
 export class Enemies {
     private static readonly enemies: Enemy[] = [];
 
-    private static readonly genGap: number = 700;
+    private static readonly genGap: number = 2500;
 
     private static genInt: number = 0;
 

@@ -249,7 +249,8 @@ export class Controls {
      * @private
      */
     private updateMovement() {
-        const speed = 0.065;
+        const { speed } = Hero.stats;
+        const diagSpeed = speed / Math.sqrt(2);
 
         switch (this.direction) {
             case Direction.Top:
@@ -269,23 +270,23 @@ export class Controls {
                 this.setAngle(90);
                 break;
             case Direction.TopLeft:
-                this.group.position.z -= this.tilda * speed;
-                this.group.position.x -= this.tilda * speed;
+                this.group.position.z -= this.tilda * diagSpeed;
+                this.group.position.x -= this.tilda * diagSpeed;
                 this.setAngle(45);
                 break;
             case Direction.TopRight:
-                this.group.position.z -= this.tilda * speed;
-                this.group.position.x += this.tilda * speed;
+                this.group.position.z -= this.tilda * diagSpeed;
+                this.group.position.x += this.tilda * diagSpeed;
                 this.setAngle(-45);
                 break;
             case Direction.DownRight:
-                this.group.position.z += this.tilda * speed;
-                this.group.position.x += this.tilda * speed;
+                this.group.position.z += this.tilda * diagSpeed;
+                this.group.position.x += this.tilda * diagSpeed;
                 this.setAngle(-135);
                 break;
             case Direction.DownLeft:
-                this.group.position.z += this.tilda * speed;
-                this.group.position.x -= this.tilda * speed;
+                this.group.position.z += this.tilda * diagSpeed;
+                this.group.position.x -= this.tilda * diagSpeed;
                 this.setAngle(-225);
                 break;
             default:
