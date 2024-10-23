@@ -76,7 +76,7 @@ export class Enemies {
 
             (enemy.mesh.material as MeshBasicMaterial).color = new Color(1 - hp / maxHp, 0, 0);
 
-            if (enemy.hp < 0) {
+            if (enemy.hp <= 0) {
                 this.killEnemy(idx);
             }
 
