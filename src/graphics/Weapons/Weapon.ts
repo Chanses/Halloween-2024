@@ -3,6 +3,7 @@ import { Mesh } from 'three';
 export enum WeaponType {
     FireZone,
     BackShot,
+    Sphere,
 }
 
 export abstract class Weapon {

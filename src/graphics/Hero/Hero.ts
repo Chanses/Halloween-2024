@@ -3,6 +3,7 @@ import { Controls } from '../Controls/Controls';
 import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
 import { BackShot } from '../Weapons/BackShot/BackShot';
+import { Sphere } from '../Weapons/Sphere/Sphere';
 
 export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
@@ -62,7 +63,8 @@ export class Hero {
         this.group.add(this.hero);
 
         scene.add(this.group);
-        this.addWeapon(WeaponType.FireZone);
+        this.addWeapon(WeaponType.Sphere);
+        // this.addWeapon(WeaponType.FireZone);
         // this.addWeapon(WeaponType.BackShot);
     }
 
@@ -95,6 +97,12 @@ export class Hero {
             case WeaponType.BackShot:
                 {
                     const weapon = new BackShot(this.group);
+                    this.handleWeapon(weapon);
+                }
+                break;
+            case WeaponType.Sphere:
+                {
+                    const weapon = new Sphere(this.group);
                     this.handleWeapon(weapon);
                 }
                 break;
