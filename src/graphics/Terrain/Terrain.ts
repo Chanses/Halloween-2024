@@ -7,7 +7,7 @@ export interface SectorProps {
     x: number;
     y: number;
 }
-export const SECTOR_SIZE: number = 40.0;
+export const SECTOR_SIZE: number = 30.0;
 
 export class Terrain {
     private readonly scene: Scene;
@@ -18,16 +18,12 @@ export class Terrain {
 
     private readonly curSector: Vector2 = new Vector2(0, 0);
 
-    private readonly enemies: Enemies;
-
     private readonly consumable: Consumable;
 
     public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
         this.consumable = new Consumable(scene, hero);
-        this.enemies = new Enemies(scene, this.consumable);
-        // this.hero
-
+        Enemies.init(scene, this.consumable);
         this.generateSector(0, 0);
     }
 
@@ -81,8 +77,6 @@ export class Terrain {
             const nY = nearCoord.y;
             this.generateNearSector(nX, nY);
         }
-
-        this.enemies.setSectorForSpawn(nearCoords);
     }
 
     private generateNearSector(x: number, y: number) {
@@ -117,12 +111,11 @@ export class Terrain {
     public update(delta: number) {
         this.updateCurrentSector();
         this.generateNearSectors();
-        this.enemies.update(delta, this.pos);
+        Enemies.update(delta, this.pos);
         this.consumable.checkPickUp(this.pos);
-        // this.hero.update
     }
 
     public dispose() {
-        this.enemies.dispose();
+        Enemies.dispose();
     }
 }

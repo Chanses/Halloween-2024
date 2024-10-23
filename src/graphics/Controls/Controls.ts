@@ -1,5 +1,6 @@
 import { AxesHelper, Mesh, Vector2 } from 'three';
 import { clamp, damp, euclideanModulo } from '../../helpers/MathUtils';
+import { Hero } from '../Hero/Hero';
 
 enum Direction {
     Idle,
@@ -19,6 +20,12 @@ export class Controls {
      * @private
      */
     private readonly hero: Mesh;
+
+    /**
+     * Группа персонаж + оружие
+     * @private
+     */
+    private readonly group: Mesh;
 
     /**
      * Нажатые в данный момент клавиши
@@ -58,8 +65,9 @@ export class Controls {
 
     private readonly DEBUG_DIRECTION: boolean = true;
 
-    public constructor(hero: Mesh) {
+    public constructor(hero: Mesh, group: Mesh) {
         this.hero = hero;
+        this.group = group;
 
         if (this.DEBUG_DIRECTION) {
             const axesHelper = new AxesHelper();
@@ -93,7 +101,7 @@ export class Controls {
     private addKey(key: string) {
         const idx = this.keys.indexOf(key);
 
-        if (idx === -1) {
+        if (idx === -1 || this.keys.length === 0) {
             this.keys.push(key);
         }
     }
@@ -121,20 +129,20 @@ export class Controls {
      * @private
      */
     private handleKeyUp(e: KeyboardEvent) {
-        switch (e.key.toLowerCase()) {
-            case 'w':
+        switch (e.code.toLowerCase()) {
+            case 'keyw':
             case 'arrowup':
                 this.deleteKey('top');
                 break;
-            case 'd':
+            case 'keyd':
             case 'arrowright':
                 this.deleteKey('right');
                 break;
-            case 'a':
+            case 'keya':
             case 'arrowleft':
                 this.deleteKey('left');
                 break;
-            case 's':
+            case 'keys':
             case 'arrowdown':
                 this.deleteKey('down');
                 break;
@@ -156,20 +164,20 @@ export class Controls {
      */
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
-        switch (e.key.toLowerCase()) {
-            case 'w':
+        switch (e.code.toLowerCase()) {
+            case 'keyw':
             case 'arrowup':
                 this.addKey('top');
                 break;
-            case 'd':
+            case 'keyd':
             case 'arrowright':
                 this.addKey('right');
                 break;
-            case 'a':
+            case 'keya':
             case 'arrowleft':
                 this.addKey('left');
                 break;
-            case 's':
+            case 'keys':
             case 'arrowdown':
                 this.addKey('down');
                 break;
@@ -245,44 +253,45 @@ export class Controls {
 
         switch (this.direction) {
             case Direction.Top:
-                this.hero.position.z -= this.tilda * speed;
+                this.group.position.z -= this.tilda * speed;
                 this.setAngle(0);
                 break;
             case Direction.Down:
-                this.hero.position.z += this.tilda * speed;
+                this.group.position.z += this.tilda * speed;
                 this.setAngle(180);
                 break;
             case Direction.Right:
-                this.hero.position.x += this.tilda * speed;
+                this.group.position.x += this.tilda * speed;
                 this.setAngle(-90);
                 break;
             case Direction.Left:
-                this.hero.position.x -= this.tilda * speed;
+                this.group.position.x -= this.tilda * speed;
                 this.setAngle(90);
                 break;
             case Direction.TopLeft:
-                this.hero.position.z -= this.tilda * speed;
-                this.hero.position.x -= this.tilda * speed;
+                this.group.position.z -= this.tilda * speed;
+                this.group.position.x -= this.tilda * speed;
                 this.setAngle(45);
                 break;
             case Direction.TopRight:
-                this.hero.position.z -= this.tilda * speed;
-                this.hero.position.x += this.tilda * speed;
+                this.group.position.z -= this.tilda * speed;
+                this.group.position.x += this.tilda * speed;
                 this.setAngle(-45);
                 break;
             case Direction.DownRight:
-                this.hero.position.z += this.tilda * speed;
-                this.hero.position.x += this.tilda * speed;
+                this.group.position.z += this.tilda * speed;
+                this.group.position.x += this.tilda * speed;
                 this.setAngle(-135);
                 break;
             case Direction.DownLeft:
-                this.hero.position.z += this.tilda * speed;
-                this.hero.position.x -= this.tilda * speed;
+                this.group.position.z += this.tilda * speed;
+                this.group.position.x -= this.tilda * speed;
                 this.setAngle(-225);
                 break;
             default:
                 break;
         }
+        Hero.pos.copy(this.group.position);
     }
 
     /**
@@ -299,15 +308,13 @@ export class Controls {
 
         this.updateMovement();
         this.updateRotation(delta);
-
-        // console.debug(this.pressed, this.direction);
     }
 
     /**
      * Получение координат персонажа
      */
     public getPosition() {
-        return new Vector2(this.hero.position.x, this.hero.position.z);
+        return new Vector2(this.group.position.x, this.group.position.z);
     }
 
     /**
