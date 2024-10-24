@@ -66,8 +66,8 @@ export class Hero {
 
         scene.add(this.group);
         this.addWeapon(WeaponType.Sphere);
-        // this.addWeapon(WeaponType.FireZone);
-        // this.addWeapon(WeaponType.BackShot);
+        this.addWeapon(WeaponType.FireZone);
+        this.addWeapon(WeaponType.BackShot);
     }
 
     /**

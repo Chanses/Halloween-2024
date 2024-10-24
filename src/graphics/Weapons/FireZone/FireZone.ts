@@ -43,9 +43,9 @@ export class FireZone extends Weapon {
         const enemies = Enemies.getEnemies();
 
         for (const enemy of enemies) {
-            const { mesh } = enemy;
+            const { mesh, size } = enemy;
 
-            if (this.hero.position.distanceTo(mesh.position) < this.rad) {
+            if (this.hero.position.distanceTo(mesh.position) < this.rad + size * 0.5) {
                 enemy.hp -= this.damage;
             }
         }

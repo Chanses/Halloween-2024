@@ -36,14 +36,13 @@ export class BackShot extends Weapon {
         const enemies = Enemies.getEnemies();
 
         for (const enemy of enemies) {
-            const { mesh } = enemy;
+            const { mesh, size } = enemy;
             const { pos, rot } = Hero;
-            const inRange = mesh.position.distanceToSquared(pos) < (this.rad + 0.2) ** 2;
+            const inRange = mesh.position.distanceToSquared(pos) < (this.rad + size * 0.5) ** 2;
             const angleToHero = euclideanModulo(
                 Math.atan2(mesh.position.x - pos.x, mesh.position.z - pos.z) - rot.y,
                 Math.PI * 2,
             );
-            // console.debug(radToDeg(angleToHero));
             const inPie =
                 radToDeg(angleToHero) < this.THETA * 0.5 ||
                 360 - radToDeg(angleToHero) < this.THETA * 0.5;

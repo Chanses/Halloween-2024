@@ -41,9 +41,9 @@ export class Enemies {
         mesh.position.set(x, 0, y);
         this.scene.add(mesh);
 
-        mesh.geometry.computeBoundingBox();
         const box = new Vector3();
-        mesh.geometry.boundingBox?.getSize(box);
+        mesh.geometry.computeBoundingBox();
+        mesh.geometry.boundingBox!.getSize(box);
 
         const stats: Omit<Enemy, 'mesh'> = {
             speed: 0.06,
