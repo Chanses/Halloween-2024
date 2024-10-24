@@ -11,7 +11,16 @@ export interface HeroStats {
     maxHp: number;
     speed: number;
     defend: number;
+    exp: number;
 }
+
+export const InitialStats: HeroStats = {
+    hp: 100,
+    maxHp: 100,
+    speed: 0.5,
+    defend: 0,
+    exp: 0,
+};
 
 export class Hero {
     private readonly group: Mesh = new Mesh();
@@ -20,18 +29,11 @@ export class Hero {
 
     private readonly controls: Controls;
 
-    private exp: number = 0;
-
     private readonly weapons: Weapon[] = [];
 
     public static pos: Vector3 = new Vector3();
 
-    private static readonly stats: HeroStats = {
-        hp: 100,
-        maxHp: 100,
-        speed: 0.5,
-        defend: 0,
-    };
+    public static stats: HeroStats = InitialStats;
 
     public constructor(scene: Scene) {
         const geo = new BoxGeometry();
@@ -87,7 +89,7 @@ export class Hero {
      * @param val
      */
     public addExp(val: number) {
-        this.exp += val;
+        Hero.stats.exp += val;
     }
 
     /**
@@ -99,7 +101,7 @@ export class Hero {
     }
 
     public die() {
-        console.log('Hero is dead');
+        (this.hero.material as MeshBasicMaterial).color.set('magenta');
     }
 
     /**
@@ -120,10 +122,10 @@ export class Hero {
             weapon.updateWeapon(delta);
         }
 
-        console.debug(this.exp);
+        console.debug(Hero.stats.exp);
 
         if (Hero.stats.hp < 0) {
-            // DEAD
+            this.die();
         }
     }
 

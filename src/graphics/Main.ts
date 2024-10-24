@@ -41,7 +41,7 @@ export class Main {
 
     private readonly cameraPos: Vector3 = new Vector3();
 
-    private readonly terrain: Terrain;
+    private terrain: Terrain;
 
     private readonly consumable: Consumable;
 
@@ -49,7 +49,13 @@ export class Main {
 
     private readonly timer: Timer;
 
-    public constructor(canvas: HTMLCanvasElement, timeEl: HTMLDivElement) {
+    private readonly hpCallback: (hp: number) => void;
+
+    public constructor(
+        canvas: HTMLCanvasElement,
+        timeEl: HTMLDivElement,
+        hpCallback: (hp: number) => void,
+    ) {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
         this.renderer.shadowMap.type = PCFShadowMap;
@@ -82,6 +88,7 @@ export class Main {
 
         this.resize();
         this.frameHandler.start();
+        this.hpCallback = hpCallback;
     }
 
     private initializeEnemies() {
@@ -96,6 +103,10 @@ export class Main {
         this.terrain.update(_delta, this.hero);
         Enemies.update(_delta);
         this.consumable.checkPickUp(this.hero.getPosition());
+
+        if (this.hpCallback) {
+            this.hpCallback(Hero.stats.hp);
+        }
 
         this.updateCamera(_delta);
         this.render();
@@ -136,6 +147,23 @@ export class Main {
             this.timer.updateTimeStart();
             this.frameHandler.start();
         }
+    }
+
+    public restartGame() {
+        Enemies.dispose();
+        if (this.consumable) {
+            this.consumable.dispose();
+        }
+        this.terrain.dispose();
+        this.timer.clear();
+
+        this.render();
+
+        this.initializeEnemies();
+        Hero.stats.hp = Hero.stats.maxHp;
+        Hero.stats.exp = 0;
+
+        this.terrain = new Terrain(this.scene, this.hero);
     }
 
     public dispose() {

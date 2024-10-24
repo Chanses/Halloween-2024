@@ -38,7 +38,7 @@ export class Consumable {
         this.expMaterial = new MeshBasicMaterial({ wireframe: true, color: '#5252d5' });
     }
 
-    public generateExperience(sector: SectorProps): void {
+    public generateExperience(sector: SectorProps) {
         const [minLimit, maxLimit] = this.expLimitBySector;
         const amount = minLimit + Math.random() * (maxLimit - minLimit);
 
@@ -53,7 +53,7 @@ export class Consumable {
         }
     }
 
-    public dropExpSphere(pos: Vector3): void {
+    public dropExpSphere(pos: Vector3) {
         const mesh = new Mesh(this.expGeometry, this.expMaterial);
         mesh.scale.setScalar(0.15);
         mesh.position.copy(pos);
@@ -61,17 +61,25 @@ export class Consumable {
         this.expSpheres.push({ mesh, collected: false });
     }
 
-    private pickExp(idx: number): void {
+    private pickExp(idx: number) {
         this.hero.addExp(Exp.Level1);
         this.scene.remove(this.expSpheres[idx].mesh);
         this.expSpheres[idx].collected = true;
     }
 
-    public checkPickUp(pos: Vector3): void {
+    public checkPickUp(pos: Vector3) {
         for (const [idx, expSphere] of this.expSpheres.entries()) {
             if (!expSphere.collected && expSphere.mesh.position.distanceTo(pos) < 1) {
                 this.pickExp(idx);
             }
         }
+    }
+
+    public dispose() {
+        for (const expSphere of this.expSpheres) {
+            this.scene.remove(expSphere.mesh);
+        }
+
+        this.expSpheres.length = 0;
     }
 }

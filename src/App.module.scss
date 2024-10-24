@@ -14,12 +14,21 @@
   }
 }
 
+.pause {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 3px;
+  font-size: inherit;
+  min-width: 200px;
+}
 
 .info {
+  font-size: 20px;
   position: absolute;
   top: 0;
   right: 0;
   display: flex;
-  gap: 12px;
+  gap: 20px;
   padding: 24px;
+  align-items: center;
 }

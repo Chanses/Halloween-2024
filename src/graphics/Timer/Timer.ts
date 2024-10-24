@@ -43,4 +43,10 @@ export class Timer {
             }
         }
     }
+
+    public clear() {
+        this.gameTime = 0;
+        this.level = 0;
+        this.timeEl.innerText = '00:00';
+    }
 }
