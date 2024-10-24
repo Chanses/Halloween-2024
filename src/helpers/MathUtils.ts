@@ -72,6 +72,14 @@ export function randomInt(minOrMax: number, max?: number) {
     return Math.floor(Math.random() * (to - from)) + from;
 }
 
+export function degToRad(deg: number) {
+    return (Math.PI / 180) * deg;
+}
+
+export function radToDeg(rad: number) {
+    return (rad * 180) / Math.PI;
+}
+
 /**
  * Создание кватерниона из углов Эйлера в последовательности (ZXY)
  * @param eulerDegrees Вектор с углами Эйлера

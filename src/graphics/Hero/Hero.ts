@@ -1,4 +1,4 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
+import { BoxGeometry, Euler, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
 import { Controls } from '../Controls/Controls';
 import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
@@ -46,6 +46,8 @@ export class Hero {
 
     public static pos: Vector3 = new Vector3();
 
+    public static rot: Euler = new Euler();
+
     private static readonly stats: HeroStats = {
         hp: 100,
         maxHp: 100,
@@ -63,7 +65,7 @@ export class Hero {
 
         scene.add(this.group);
         this.addWeapon(WeaponType.FireZone);
-        // this.addWeapon(WeaponType.BackShot);
+        this.addWeapon(WeaponType.BackShot);
     }
 
     /**
@@ -137,8 +139,6 @@ export class Hero {
             weapon.updateWeapon(delta);
         }
 
-        console.debug(this.exp);
-
         if (Hero.stats.hp < 0) {
             // DEAD
         }
@@ -149,5 +149,8 @@ export class Hero {
      */
     public dispose() {
         this.controls.dispose();
+        for (const weapon of this.weapons) {
+            weapon.dispose();
+        }
     }
 }

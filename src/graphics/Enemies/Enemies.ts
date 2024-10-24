@@ -31,8 +31,6 @@ export class Enemies {
     }
 
     private static generateEnemy() {
-        // TODO Возможно стоит переделать на генерацию по радиусу от персонажа
-
         const dist = 25 + Math.random() * 5;
         const angle = (Math.PI / 180) * Math.random() * 360;
         const x = Math.sin(angle) * dist + Hero.pos.x;
