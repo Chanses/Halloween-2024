@@ -249,45 +249,45 @@ export class Controls {
      * Обработчик передвижения
      * @private
      */
-    private updateMovement() {
+    private updateMovement(delta: number) {
         const { speed } = Hero.stats;
         const diagSpeed = speed / Math.sqrt(2);
 
         switch (this.direction) {
             case Direction.Top:
-                this.group.position.z -= this.tilda * speed;
+                this.group.position.z -= this.tilda * speed * delta;
                 this.setAngle(0);
                 break;
             case Direction.Down:
-                this.group.position.z += this.tilda * speed;
+                this.group.position.z += this.tilda * speed * delta;
                 this.setAngle(180);
                 break;
             case Direction.Right:
-                this.group.position.x += this.tilda * speed;
+                this.group.position.x += this.tilda * speed * delta;
                 this.setAngle(-90);
                 break;
             case Direction.Left:
-                this.group.position.x -= this.tilda * speed;
+                this.group.position.x -= this.tilda * speed * delta;
                 this.setAngle(90);
                 break;
             case Direction.TopLeft:
-                this.group.position.z -= this.tilda * diagSpeed;
-                this.group.position.x -= this.tilda * diagSpeed;
+                this.group.position.z -= this.tilda * diagSpeed * delta;
+                this.group.position.x -= this.tilda * diagSpeed * delta;
                 this.setAngle(45);
                 break;
             case Direction.TopRight:
-                this.group.position.z -= this.tilda * diagSpeed;
-                this.group.position.x += this.tilda * diagSpeed;
+                this.group.position.z -= this.tilda * diagSpeed * delta;
+                this.group.position.x += this.tilda * diagSpeed * delta;
                 this.setAngle(-45);
                 break;
             case Direction.DownRight:
-                this.group.position.z += this.tilda * diagSpeed;
-                this.group.position.x += this.tilda * diagSpeed;
+                this.group.position.z += this.tilda * diagSpeed * delta;
+                this.group.position.x += this.tilda * diagSpeed * delta;
                 this.setAngle(-135);
                 break;
             case Direction.DownLeft:
-                this.group.position.z += this.tilda * diagSpeed;
-                this.group.position.x -= this.tilda * diagSpeed;
+                this.group.position.z += this.tilda * diagSpeed * delta;
+                this.group.position.x -= this.tilda * diagSpeed * delta;
                 this.setAngle(-225);
                 break;
             default:
@@ -308,7 +308,7 @@ export class Controls {
             this.tilda = clamp(this.tilda - delta * speed, 0, 1);
         }
 
-        this.updateMovement();
+        this.updateMovement(delta);
         this.updateRotation(delta);
     }
 

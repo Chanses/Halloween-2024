@@ -8,6 +8,7 @@ export interface Enemy {
     damage: number;
     hp: number;
     maxHp: number;
+    size: number;
 }
 
 export class Enemies {
@@ -40,11 +41,16 @@ export class Enemies {
         mesh.position.set(x, 0, y);
         this.scene.add(mesh);
 
+        mesh.geometry.computeBoundingBox();
+        const box = new Vector3();
+        mesh.geometry.boundingBox?.getSize(box);
+
         const stats: Omit<Enemy, 'mesh'> = {
             speed: 0.06,
             hp: 100,
             damage: 1,
             maxHp: 100,
+            size: box.x,
         };
 
         this.enemies.push({
