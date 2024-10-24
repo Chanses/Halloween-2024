@@ -1,6 +1,6 @@
-import { BoxGeometry, Color, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
-import { Consumable } from '../Terrain/Consumable';
+import { BoxGeometry, Color, Mesh, MeshBasicMaterial, Scene } from 'three';
 import { Hero } from '../Hero/Hero';
+import { Consumable } from '../Consumable/Consumable.ts';
 
 export interface Enemy {
     mesh: Mesh;
@@ -13,37 +13,51 @@ export interface Enemy {
 export class Enemies {
     private static readonly enemies: Enemy[] = [];
 
-    private static readonly genGap: number = 700;
-
     private static genInt: number = 0;
 
     private static scene: Scene;
 
+    private static hero: Hero;
+
     private static consumable: Consumable;
 
-    public static init(scene: Scene, consumable: Consumable) {
+    private static enemySpeed: number = 0.06;
+
+    public static init(scene: Scene, hero: Hero, consumable: Consumable) {
+        if (!scene || !hero || !consumable) {
+            throw new Error('Scene, Hero, and Consumable are required to initialize Enemies.');
+        }
         this.scene = scene;
-        this.generateEnemy = this.generateEnemy.bind(this);
+        this.hero = hero;
         this.consumable = consumable;
+    }
+
+    public static setSpawnRate(spawnRate: number) {
+        if (this.genInt) {
+            clearInterval(this.genInt);
+        }
         this.genInt = setInterval(() => {
             this.generateEnemy();
-        }, this.genGap);
+        }, spawnRate);
+    }
+
+    public static setEnemySpeed(speed: number) {
+        this.enemySpeed = speed;
     }
 
     private static generateEnemy() {
-        // TODO Возможно стоит переделать на генерацию по радиусу от персонажа
-
-        const dist = 25 + Math.random() * 5;
-        const angle = (Math.PI / 180) * Math.random() * 360;
-        const x = Math.sin(angle) * dist + Hero.pos.x;
-        const y = Math.cos(angle) * dist + Hero.pos.z;
+        const dist = 9 + Math.random() * 4;
+        const angle = Math.random() * Math.PI * 2;
+        const heroPos = this.hero.getPosition();
+        const x = Math.sin(angle) * dist + heroPos.x;
+        const z = Math.cos(angle) * dist + heroPos.z;
 
         const mesh = new Mesh(new BoxGeometry(), new MeshBasicMaterial({ depthWrite: false }));
-        mesh.position.set(x, 0, y);
+        mesh.position.set(x, 0, z);
         this.scene.add(mesh);
 
         const stats: Omit<Enemy, 'mesh'> = {
-            speed: 0.06,
+            speed: this.enemySpeed,
             hp: 100,
             damage: 1,
             maxHp: 100,
@@ -58,32 +72,31 @@ export class Enemies {
     private static killEnemy(idx: number) {
         const enemy = this.enemies[idx];
         if (enemy) {
-            this.consumable.dropExpSphere(enemy.mesh.position);
             this.scene.remove(enemy.mesh);
             this.enemies.splice(idx, 1);
+            this.consumable.dropExpSphere(enemy.mesh.position);
         }
     }
 
-    public static update(delta: number, hPos: Vector3) {
-        this.enemies.forEach((enemy, idx) => {
+    public static update(delta: number) {
+        const heroPos = this.hero.getPosition();
+        for (let i = 0; i < this.enemies.length; i++) {
+            const enemy = this.enemies[i];
             const { mesh, hp, maxHp, speed, damage } = enemy;
 
-            mesh.lookAt(hPos);
+            mesh.lookAt(heroPos);
             mesh.position.addScaledVector(
-                hPos.clone().sub(mesh.position).normalize(),
+                heroPos.clone().sub(mesh.position).normalize(),
                 speed * delta,
             );
+            (mesh.material as MeshBasicMaterial).color = new Color(1 - hp / maxHp, 0, 0);
 
-            (enemy.mesh.material as MeshBasicMaterial).color = new Color(1 - hp / maxHp, 0, 0);
-
-            if (enemy.hp < 0) {
-                this.killEnemy(idx);
-            }
-
-            if (enemy.mesh.position.distanceTo(hPos) < 1) {
+            if (hp < 0) {
+                this.killEnemy(i);
+            } else if (mesh.position.distanceTo(heroPos) < 1) {
                 Hero.getDamage(damage);
             }
-        });
+        }
     }
 
     public static getEnemies(): Enemy[] {
@@ -92,5 +105,9 @@ export class Enemies {
 
     public static dispose() {
         clearInterval(this.genInt);
+        this.enemies.forEach((enemy) => {
+            this.scene.remove(enemy.mesh);
+        });
+        this.enemies.length = 0;
     }
 }

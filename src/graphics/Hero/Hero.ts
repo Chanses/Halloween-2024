@@ -14,34 +14,14 @@ export interface HeroStats {
 }
 
 export class Hero {
-    /**
-     * Основная группа для персонажа и оружий
-     * @private
-     */
     private readonly group: Mesh = new Mesh();
 
-    /**
-     * Меш персонажа
-     * @private
-     */
     private readonly hero: Mesh;
 
-    /**
-     * Контролы
-     * @private
-     */
     private readonly controls: Controls;
 
-    /**
-     * Кол-во опыта персонажа
-     * @private
-     */
     private exp: number = 0;
 
-    /**
-     * Активные оружия
-     * @private
-     */
     private readonly weapons: Weapon[] = [];
 
     public static pos: Vector3 = new Vector3();
@@ -63,7 +43,6 @@ export class Hero {
 
         scene.add(this.group);
         this.addWeapon(WeaponType.FireZone);
-        // this.addWeapon(WeaponType.BackShot);
     }
 
     /**
@@ -117,6 +96,10 @@ export class Hero {
      */
     public static getDamage(dmg: number) {
         this.stats.hp -= dmg;
+    }
+
+    public die() {
+        console.log('Hero is dead');
     }
 
     /**
