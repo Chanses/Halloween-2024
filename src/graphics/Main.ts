@@ -154,6 +154,7 @@ export class Main {
         if (this.consumable) {
             this.consumable.dispose();
         }
+        // TODO: не все точки удаляются почему-то
         this.terrain.dispose();
         this.timer.clear();
 
