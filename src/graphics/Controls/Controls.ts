@@ -229,6 +229,7 @@ export class Controls {
     private updateRotation(delta: number) {
         this.rotation = damp(this.rotation, (Math.PI / 180) * this.angle, 0.1, delta);
         this.hero.rotation.y = this.rotation;
+        Hero.rot.copy(this.hero.rotation);
     }
 
     /**

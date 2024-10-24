@@ -65,4 +65,5 @@ export abstract class Weapon {
      * @param _delta
      */
     public abstract updateWeapon(_delta: number): void;
+    public dispose() {}
 }
