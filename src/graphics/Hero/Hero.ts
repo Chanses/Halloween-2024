@@ -2,7 +2,7 @@ import { BoxGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
 import { Controls } from '../Controls/Controls';
 import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
-import { BackShot } from '../Weapons/BackShot/BackShot';
+import { ElectricZone } from '../Weapons/ElectricZone/ElectricZone.ts';
 
 export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
@@ -67,15 +67,15 @@ export class Hero {
      */
     public addWeapon(type: WeaponType) {
         switch (type) {
-            case WeaponType.FireZone:
+            case WeaponType.ElectricZone:
                 {
-                    const weapon = new FireZone(this.group);
+                    const weapon = new ElectricZone(this.group);
                     this.handleWeapon(weapon);
                 }
                 break;
-            case WeaponType.BackShot:
+            case WeaponType.FireZone:
                 {
-                    const weapon = new BackShot(this.group);
+                    const weapon = new FireZone(this.group);
                     this.handleWeapon(weapon);
                 }
                 break;

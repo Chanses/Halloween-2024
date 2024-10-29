@@ -4,7 +4,7 @@ import vertShader from './mat.vert.glsl?raw';
 import { Weapon, WeaponType } from '../Weapon';
 import { Enemies } from '../../Enemies/Enemies';
 
-export class FireZone extends Weapon {
+export class ElectricZone extends Weapon {
     public readonly type: WeaponType = WeaponType.FireZone;
 
     protected readonly mesh: Mesh = new Mesh();
