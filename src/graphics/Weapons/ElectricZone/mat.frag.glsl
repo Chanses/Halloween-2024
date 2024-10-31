@@ -1,8 +1,11 @@
 varying vec2 vUv;
+varying vec3 vPosition;
+varying vec3 vNormal;
 uniform float time;
 
 #define detail_steps 13
 #define mod3 vec3(.1031, .11369, .13787)
+
 
 vec3 hash3_3(vec3 p3) {
     p3 = fract(p3 * mod3);
@@ -53,14 +56,17 @@ float noise_sum_abs3(vec3 p) {
 }
 
 void main() {
-    vec2 p = vUv * 2.0 - 1.0;
+    float theta = atan(vPosition.x, vPosition.z);
+    float height = vPosition.y;
+
+    vec2 p = vec2(theta / (2.0 * 3.14159) + 0.5, height / 4.0 + 0.5);
 
     float electric_density = 0.9;
-    float electric_radius = length(p) - 0.4;
+    float electric_radius = 0.4;
     float velocity = 0.1;
 
-    float moving_coord = sin(velocity * time) / 0.2 * cos(velocity * time);
-    vec3 electric_local_domain = vec3(p, moving_coord);
+    float moving_coord = sin(velocity * time + theta * 2.0) * cos(velocity * time + height * 2.0);
+    vec3 electric_local_domain = vec3(p * 4.0, moving_coord);
     float electric_field = electric_density * noise_sum_abs3(electric_local_domain);
 
     vec3 col = vec3(107.0/255.0, 148.0/255.0, 196.0/255.0);
@@ -71,18 +77,14 @@ void main() {
         col -= 0.3;
     }
 
-    col += 1.0 - 4.2*electric_field;
+    col += 1.0 - 4.2 * electric_field;
 
-    // Ограничиваем эффект кругом
-    float mask = smoothstep(1.0, 0.6, length(p));
-    col *= mask;
+    float edge_fade = smoothstep(0.0, 0.1, abs(height + 2.0)) *
+    smoothstep(0.0, 0.1, abs(2.0 - height));
 
-    // Добавляем виньетку
-    float dist = length(p);
-    float vignette = smoothstep(0.6, 1.0, dist); // Контролируем размер виньетки
-    float alpha = mask > 0.2 ? 0.6 : 0.0;
-
-    alpha *= (1.0 - vignette);
+    float normal_influence = dot(normalize(vNormal), vec3(0.0, 1.0, 0.0));
+    float alpha = smoothstep(0.1, 0.8, electric_field) * edge_fade;
+    alpha *= 0.6 * (1.0 + 0.2 * normal_influence);
 
     gl_FragColor = vec4(col, alpha);
 }

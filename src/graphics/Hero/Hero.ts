@@ -89,7 +89,7 @@ export class Hero {
                 this.group.add(this.hero);
                 scene.add(this.group);
                 this.controls = new Controls(this.hero, this.group, this.walkAction);
-                this.addWeapon(WeaponType.FireZone);
+                this.addWeapon(WeaponType.ElectricZone);
             }
         });
     }
@@ -185,7 +185,8 @@ export class Hero {
             this.controls.update(delta);
         }
 
-        const isMoving = this.controls?.isMoving(); // Метод в Controls для проверки движения
+        // Метод в Controls для проверки движения
+        const isMoving = this.controls?.isMoving();
 
         if (this.mixer) {
             this.mixer.update(delta);

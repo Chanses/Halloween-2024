@@ -1,6 +1,7 @@
 import {
     AmbientLight,
     DirectionalLight,
+    FogExp2,
     PCFShadowMap,
     PerspectiveCamera,
     Scene,
@@ -70,7 +71,7 @@ export class Main {
         this.dirLight = new DirectionalLight('rgba(10,133,147,0.58)', 2);
         this.dirLight.position.copy(LIGHT_POSITION);
         this.dirLight.castShadow = true;
-        // this.scene.fog = new FogExp2('#04343f', 0.06);
+        this.scene.fog = new FogExp2('#04343f', 0.04);
 
         this.ambLight = new AmbientLight('#596987', 10);
         this.hero = new Hero(this.scene);
@@ -96,12 +97,6 @@ export class Main {
         this.resize();
         this.frameHandler.start();
         this.hpCallback = hpCallback;
-    }
-
-    private initializeEnemies() {
-        Enemies.init(this.scene, this.hero, this.consumable, this.medkit);
-        Enemies.setSpawnRate(1000);
-        Enemies.setEnemySpeed(0.06);
     }
 
     private update(_delta: number) {
@@ -146,14 +141,27 @@ export class Main {
         this.renderer.setSize(w, h, false);
     }
 
+    private initializeEnemies() {
+        Enemies.init(this.scene, this.hero, this.consumable, this.medkit);
+        Enemies.setSpawnRate(1000);
+        Enemies.setEnemySpeed(0.06);
+    }
+
     public togglePause() {
         this.paused = !this.paused;
+
         if (this.paused) {
+            Enemies.setSpawnRate(0);
             this.frameHandler.stop();
         } else {
             this.timer.updateTimeStart();
+            Enemies.setSpawnRate(1000);
             this.frameHandler.start();
         }
+    }
+
+    public isPaused(): boolean {
+        return this.paused;
     }
 
     public restartGame() {
@@ -161,7 +169,7 @@ export class Main {
         if (this.consumable) {
             this.consumable.dispose();
         }
-        // TODO: не все точки удаляются почему-то
+
         this.terrain.dispose();
         this.timer.clear();
 

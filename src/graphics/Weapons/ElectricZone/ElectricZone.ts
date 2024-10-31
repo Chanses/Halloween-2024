@@ -1,4 +1,4 @@
-import { CircleGeometry, Mesh, ShaderMaterial } from 'three';
+import { CylinderGeometry, DoubleSide, Mesh, ShaderMaterial } from 'three';
 import fragShader from './mat.frag.glsl?raw';
 import vertShader from './mat.vert.glsl?raw';
 import { Weapon, WeaponType } from '../Weapon';
@@ -11,7 +11,7 @@ export class ElectricZone extends Weapon {
 
     private readonly material: ShaderMaterial;
 
-    private readonly rad: number = 3.33;
+    private readonly rad: number = 3;
 
     private readonly damage: number = 2;
 
@@ -29,12 +29,13 @@ export class ElectricZone extends Weapon {
                 time: { value: 0 },
             },
             transparent: true,
+            side: DoubleSide,
         });
 
-        const geo = new CircleGeometry(this.rad, 64);
+        const geo = new CylinderGeometry(this.rad * 1.75, this.rad, 4, 64, 8, true);
         this.mesh = new Mesh(geo, this.material);
-        this.mesh.rotation.x = -Math.PI / 2;
-        this.mesh.position.y = -0.5;
+        this.mesh.rotation.y = this.rad / 2;
+        this.mesh.position.z = -this.rad / 2;
     }
 
     public setActive() {
@@ -46,7 +47,7 @@ export class ElectricZone extends Weapon {
     }
 
     public updateWeapon(_delta: number) {
-        this.time += _delta * 0.01;
+        this.time += _delta * 0.5;
         this.material.uniforms.time.value = this.time;
 
         const enemies = Enemies.getEnemies();

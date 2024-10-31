@@ -1,4 +1,5 @@
 import {
+    Material,
     Mesh,
     MeshBasicMaterial,
     MeshStandardMaterial,
@@ -18,6 +19,7 @@ export interface SectorProps {
 }
 
 export const SECTOR_SIZE: number = 30.0;
+export const PICKUP_RADIUS: number = 2.0;
 
 export class Terrain {
     private readonly scene: Scene;
@@ -29,6 +31,8 @@ export class Terrain {
     private readonly consumable: Consumable;
 
     private readonly medkit: Medkit;
+
+    private readonly sectorMeshes: Map<string, Mesh[]> = new Map();
 
     public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
@@ -75,6 +79,7 @@ export class Terrain {
     }
 
     private generateSector(x: number, y: number) {
+        const key = this.getSectorKey(x, y);
         const sector = new Mesh(
             new PlaneGeometry(SECTOR_SIZE, SECTOR_SIZE),
             new MeshBasicMaterial({
@@ -92,23 +97,45 @@ export class Terrain {
         sectorShadow.receiveShadow = true;
         sector.position.set(x, 0, y);
         sector.rotation.x = -Math.PI * 0.5;
-        // sector.position.y = -0.5;
         sectorShadow.position.copy(sector.position).add(new Vector3(0, 0.1, 0));
         sectorShadow.rotation.copy(sector.rotation);
 
         this.scene.add(sector, sectorShadow);
-        this.sectors.add(this.getSectorKey(x, y));
+        this.sectors.add(key);
+
         this.consumable.generateExperience({ x, y });
         this.medkit.generateMedkits({ x, y });
     }
 
+    private disposeSector(key: string) {
+        const meshes = this.sectorMeshes.get(key);
+        if (meshes) {
+            meshes.forEach((mesh) => {
+                this.scene.remove(mesh);
+                mesh.geometry.dispose();
+                if (mesh.material instanceof Material) {
+                    mesh.material.dispose();
+                }
+            });
+            this.sectorMeshes.delete(key);
+        }
+        this.sectors.delete(key);
+    }
+
     public update(_delta: number, hero: Hero) {
         this.generateNearSectors(hero);
-        this.consumable.checkPickUp(hero.getPosition());
+        this.consumable.checkPickUp(hero.getPosition(), PICKUP_RADIUS);
         this.medkit.checkPickUp(hero.getPosition());
     }
 
     public dispose() {
+        for (const key of this.sectors) {
+            this.disposeSector(key);
+        }
+
+        this.consumable.dispose();
+        this.medkit.dispose();
+
         Enemies.dispose();
     }
 }

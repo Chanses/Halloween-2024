@@ -214,11 +214,6 @@ void main() {
     // Смешивание цветов
     vec3 finalColor = mix(color1.rgb, color2, 0.7);
 
-    // Создание виньетки с прозрачностью по краям
-    float dist = length(p);
-    float vignette = smoothstep(0.8, 1.0, dist);  // Эффект затемнения к краям
-    float alpha = smoothstep(1.0, 0.8, dist) * color1.a;  // Прозрачность на краях
-
     // Финальный цвет с прозрачностью
-    gl_FragColor = vec4(finalColor, alpha * (1.0 - vignette));
+    gl_FragColor = vec4(finalColor, 1);
 }
