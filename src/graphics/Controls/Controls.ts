@@ -1,4 +1,4 @@
-import { AxesHelper, Mesh, Vector2 } from 'three';
+import { AnimationAction, AxesHelper, Mesh, Object3D, Vector2 } from 'three';
 import { clamp, damp, euclideanModulo } from '../../helpers/MathUtils';
 import { Hero } from '../Hero/Hero';
 
@@ -15,11 +15,13 @@ enum Direction {
 }
 
 export class Controls {
+    private readonly walkAction: AnimationAction | null = null;
+
     /**
      * Меш главного персонажа
      * @private
      */
-    private readonly hero: Mesh;
+    private readonly hero: Object3D;
 
     /**
      * Группа персонаж + оружие
@@ -65,9 +67,10 @@ export class Controls {
 
     private readonly DEBUG_DIRECTION: boolean = true;
 
-    public constructor(hero: Mesh, group: Mesh) {
+    public constructor(hero: Object3D, group: Mesh, walkAction: AnimationAction | null) {
         this.hero = hero;
         this.group = group;
+        this.walkAction = walkAction;
 
         if (this.DEBUG_DIRECTION) {
             const axesHelper = new AxesHelper();
@@ -104,6 +107,10 @@ export class Controls {
         if (idx === -1 || this.keys.length === 0) {
             this.keys.push(key);
         }
+    }
+
+    public isMoving(): boolean {
+        return this.pressed && this.keys.length > 0;
     }
 
     /**
@@ -152,6 +159,9 @@ export class Controls {
 
         if (this.keys.length === 0) {
             this.pressed = false;
+            if (this.walkAction) {
+                this.walkAction.stop();
+            } // Останавливаем анимацию, если персонаж стоит
         } else {
             this.setDirection();
         }
@@ -164,6 +174,9 @@ export class Controls {
      */
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
+        if (this.walkAction && !this.walkAction.isRunning()) {
+            this.walkAction.play(); // Включаем анимацию при движении
+        }
         switch (e.code.toLowerCase()) {
             case 'keyw':
             case 'arrowup':

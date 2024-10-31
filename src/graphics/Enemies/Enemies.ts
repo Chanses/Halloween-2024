@@ -1,6 +1,7 @@
 import { BoxGeometry, Color, Mesh, MeshBasicMaterial, Scene } from 'three';
 import { Hero } from '../Hero/Hero';
 import { Consumable } from '../Consumable/Consumable.ts';
+import { Medkit } from '../Medkit/Medkit.ts';
 
 export interface Enemy {
     mesh: Mesh;
@@ -23,8 +24,8 @@ export class Enemies {
 
     private static enemySpeed: number = 0.06;
 
-    public static init(scene: Scene, hero: Hero, consumable: Consumable) {
-        if (!scene || !hero || !consumable) {
+    public static init(scene: Scene, hero: Hero, consumable: Consumable, medkit: Medkit) {
+        if (!scene || !hero || !consumable || !medkit) {
             throw new Error('Scene, Hero, and Consumable are required to initialize Enemies.');
         }
         this.scene = scene;
