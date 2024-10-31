@@ -14,6 +14,7 @@ import { Hero } from './Hero/Hero';
 import { Timer } from './Timer/Timer';
 import { Enemies } from './Enemies/Enemies';
 import { Consumable } from './Consumable/Consumable';
+import { Medkit } from './Medkit/Medkit.ts';
 
 const CAMERA_POSITION = new Vector3(0, 15, 0);
 const LIGHT_POSITION = new Vector3(50, 50, 50);
@@ -43,6 +44,8 @@ export class Main {
 
     private terrain: Terrain;
 
+    private readonly medkit: Medkit;
+
     private readonly consumable: Consumable;
 
     private paused: boolean = false;
@@ -59,19 +62,23 @@ export class Main {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
         this.renderer.shadowMap.type = PCFShadowMap;
+        this.renderer.shadowMap.enabled = true;
         this.camera = new PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.01, 100);
         this.camera.position.copy(CAMERA_POSITION);
         this.scene = new Scene();
 
-        this.dirLight = new DirectionalLight();
+        this.dirLight = new DirectionalLight('rgba(10,133,147,0.58)', 2);
         this.dirLight.position.copy(LIGHT_POSITION);
         this.dirLight.castShadow = true;
+        // this.scene.fog = new FogExp2('#04343f', 0.06);
 
-        this.ambLight = new AmbientLight();
+        this.ambLight = new AmbientLight('#596987', 10);
         this.hero = new Hero(this.scene);
         this.terrain = new Terrain(this.scene, this.hero);
 
         this.consumable = new Consumable(this.scene, this.hero);
+
+        this.medkit = new Medkit(this.scene, this.hero);
 
         this.scene.add(this.camera, this.dirLight, this.ambLight);
 
@@ -92,7 +99,7 @@ export class Main {
     }
 
     private initializeEnemies() {
-        Enemies.init(this.scene, this.hero, this.consumable);
+        Enemies.init(this.scene, this.hero, this.consumable, this.medkit);
         Enemies.setSpawnRate(1000);
         Enemies.setEnemySpeed(0.06);
     }
@@ -103,7 +110,7 @@ export class Main {
         this.terrain.update(_delta, this.hero);
         Enemies.update(_delta);
         this.consumable.checkPickUp(this.hero.getPosition());
-
+        this.medkit.checkPickUp(this.hero.getPosition());
         if (this.hpCallback) {
             this.hpCallback(Hero.stats.hp);
         }

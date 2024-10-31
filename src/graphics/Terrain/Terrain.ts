@@ -1,7 +1,16 @@
-import { Mesh, MeshBasicMaterial, PlaneGeometry, Scene, Vector2 } from 'three';
+import {
+    Mesh,
+    MeshBasicMaterial,
+    MeshStandardMaterial,
+    PlaneGeometry,
+    Scene,
+    Vector2,
+    Vector3,
+} from 'three';
 import { Enemies } from '../Enemies/Enemies';
 import { Consumable } from '../Consumable/Consumable.ts';
 import { Hero } from '../Hero/Hero';
+import { Medkit } from '../Medkit/Medkit.ts';
 
 export interface SectorProps {
     x: number;
@@ -19,9 +28,12 @@ export class Terrain {
 
     private readonly consumable: Consumable;
 
+    private readonly medkit: Medkit;
+
     public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
         this.consumable = new Consumable(scene, hero);
+        this.medkit = new Medkit(scene, hero);
         this.generateSector(0, 0);
     }
 
@@ -65,18 +77,35 @@ export class Terrain {
     private generateSector(x: number, y: number) {
         const sector = new Mesh(
             new PlaneGeometry(SECTOR_SIZE, SECTOR_SIZE),
-            new MeshBasicMaterial({ wireframe: true }),
+            new MeshBasicMaterial({
+                color: 0x000000,
+                depthWrite: false,
+                transparent: true,
+                opacity: 0,
+            }),
         );
+        const sectorShadow = new Mesh(
+            new PlaneGeometry(SECTOR_SIZE, SECTOR_SIZE),
+            new MeshStandardMaterial({ color: '#493636', depthWrite: false }),
+        );
+        sector.receiveShadow = true;
+        sectorShadow.receiveShadow = true;
         sector.position.set(x, 0, y);
-        sector.rotation.x = Math.PI * 0.5;
-        this.scene.add(sector);
+        sector.rotation.x = -Math.PI * 0.5;
+        // sector.position.y = -0.5;
+        sectorShadow.position.copy(sector.position).add(new Vector3(0, 0.1, 0));
+        sectorShadow.rotation.copy(sector.rotation);
+
+        this.scene.add(sector, sectorShadow);
         this.sectors.add(this.getSectorKey(x, y));
         this.consumable.generateExperience({ x, y });
+        this.medkit.generateMedkits({ x, y });
     }
 
     public update(_delta: number, hero: Hero) {
         this.generateNearSectors(hero);
         this.consumable.checkPickUp(hero.getPosition());
+        this.medkit.checkPickUp(hero.getPosition());
     }
 
     public dispose() {

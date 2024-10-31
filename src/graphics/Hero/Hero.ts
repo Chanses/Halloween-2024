@@ -1,8 +1,9 @@
-import { BoxGeometry, Mesh, MeshBasicMaterial, Scene, Vector3 } from 'three';
-import { Controls } from '../Controls/Controls';
+import { Mesh, Object3D, Scene, Vector3, AnimationMixer, AnimationAction, PointLight } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
 import { BackShot } from '../Weapons/BackShot/BackShot';
+import { Controls } from '../Controls/Controls.ts';
 
 export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
@@ -11,40 +12,88 @@ export interface HeroStats {
     maxHp: number;
     speed: number;
     defend: number;
-    exp: number;
 }
 
-export const InitialStats: HeroStats = {
-    hp: 100,
-    maxHp: 100,
-    speed: 0.5,
-    defend: 0,
-    exp: 0,
-};
-
 export class Hero {
+    private readonly walkAction: AnimationAction | null = null;
+
+    private mixer: AnimationMixer | null = null;
+
+    private readonly animationsMap: Map<string, AnimationAction> = new Map();
+
+    private activeAction: AnimationAction | null = null;
+
+    /**
+     * Основная группа для персонажа и оружий
+     * @private
+     */
     private readonly group: Mesh = new Mesh();
 
-    private readonly hero: Mesh;
+    /**
+     * Меш персонажа
+     * @private
+     */
+    private hero: Object3D | null = null;
 
-    private readonly controls: Controls;
+    /**
+     * Контролы
+     * @private
+     */
+    private controls: Controls | null = null;
 
+    /**
+     * Кол-во опыта персонажа
+     * @private
+     */
+    private exp: number = 0;
+
+    /**
+     * Активные оружия
+     * @private
+     */
     private readonly weapons: Weapon[] = [];
 
     public static pos: Vector3 = new Vector3();
 
-    public static stats: HeroStats = InitialStats;
+    public static readonly stats: HeroStats = {
+        hp: 100,
+        maxHp: 100,
+        speed: 1,
+        defend: 0,
+    };
 
     public constructor(scene: Scene) {
-        const geo = new BoxGeometry();
-        const mat = new MeshBasicMaterial({ wireframe: false, color: 'green' });
+        const loader = new GLTFLoader();
+        loader.load('src/models/Soldier.glb', (gltf) => {
+            const model = gltf.scene;
+            model.traverse((object: any) => {
+                if (object.isMesh) {
+                    object.castShadow = true;
+                    object.receiveShadow = true;
+                }
+            });
+            model.scale.setScalar(2);
+            this.hero = model;
+            const light = new PointLight('#e4de27', 100);
+            light.position.set(0, 5, 0);
+            this.group.add(light);
+            this.mixer = new AnimationMixer(this.hero);
+            gltf.animations.forEach((clip) => {
+                const action = this.mixer!.clipAction(clip);
+                this.animationsMap.set(clip.name, action);
+                if (clip.name === 'Idle') {
+                    this.activeAction = action;
+                    this.activeAction.play();
+                }
+            });
 
-        this.hero = new Mesh(geo, mat);
-        this.controls = new Controls(this.hero, this.group);
-        this.group.add(this.hero);
-
-        scene.add(this.group);
-        this.addWeapon(WeaponType.FireZone);
+            if (this.hero) {
+                this.group.add(this.hero);
+                scene.add(this.group);
+                this.controls = new Controls(this.hero, this.group, this.walkAction);
+                // this.addWeapon(WeaponType.FireZone);
+            }
+        });
     }
 
     /**
@@ -85,11 +134,22 @@ export class Hero {
     }
 
     /**
+     * Добаление здоровья
+     * @param hp
+     */
+    public addHp(hp: number) {
+        Hero.stats.hp += hp;
+        if (Hero.stats.hp > Hero.stats.maxHp) {
+            Hero.stats.hp = Hero.stats.maxHp;
+        }
+    }
+
+    /**
      * Добаление опыта опыта
      * @param val
      */
     public addExp(val: number) {
-        Hero.stats.exp += val;
+        this.exp += val;
     }
 
     /**
@@ -100,10 +160,6 @@ export class Hero {
         this.stats.hp -= dmg;
     }
 
-    public die() {
-        (this.hero.material as MeshBasicMaterial).color.set('magenta');
-    }
-
     /**
      * Получение позиции
      */
@@ -111,21 +167,34 @@ export class Hero {
         return this.group.position;
     }
 
+    private setAnimation(name: string) {
+        const newAction = this.animationsMap.get(name);
+        if (newAction && this.activeAction !== newAction) {
+            this.activeAction?.fadeOut(0.2);
+            newAction.reset().fadeIn(0.2).play();
+            this.activeAction = newAction;
+        }
+    }
+
     /**
      * Обновление персонажа и оружий
      * @param delta
      */
     public update(delta: number) {
-        this.controls.update(delta);
-
-        for (const weapon of this.weapons) {
-            weapon.updateWeapon(delta);
+        if (this.controls) {
+            this.controls.update(delta);
         }
 
-        console.debug(Hero.stats.exp);
+        const isMoving = this.controls?.isMoving(); // Метод в Controls для проверки движения
 
-        if (Hero.stats.hp < 0) {
-            this.die();
+        if (this.mixer) {
+            this.mixer.update(delta);
+        }
+
+        if (isMoving && this.activeAction?.getClip().name !== 'Walk') {
+            this.setAnimation('Walk');
+        } else if (!isMoving && this.activeAction?.getClip().name !== 'Idle') {
+            this.setAnimation('Idle');
         }
     }
 
@@ -133,6 +202,6 @@ export class Hero {
      * Очищение ресурсов
      */
     public dispose() {
-        this.controls.dispose();
+        this.controls?.dispose();
     }
 }
