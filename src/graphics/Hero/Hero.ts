@@ -15,6 +15,14 @@ export interface HeroStats {
     exp: number;
 }
 
+export const InitialStats: HeroStats = {
+    hp: 100,
+    maxHp: 100,
+    speed: 0.5,
+    defend: 0,
+    exp: 0,
+};
+
 export class Hero {
     private readonly walkAction: AnimationAction | null = null;
 
@@ -50,13 +58,7 @@ export class Hero {
 
     public static pos: Vector3 = new Vector3();
 
-    public static readonly stats: HeroStats = {
-        hp: 100,
-        maxHp: 100,
-        speed: 1,
-        defend: 0,
-        exp: 0,
-    };
+    public static stats: HeroStats = InitialStats;
 
     public constructor(scene: Scene) {
         const loader = new GLTFLoader();
@@ -87,7 +89,7 @@ export class Hero {
                 this.group.add(this.hero);
                 scene.add(this.group);
                 this.controls = new Controls(this.hero, this.group, this.walkAction);
-                // this.addWeapon(WeaponType.FireZone);
+                this.addWeapon(WeaponType.FireZone);
             }
         });
     }
@@ -156,6 +158,8 @@ export class Hero {
         this.stats.hp -= dmg;
     }
 
+    public die() {}
+
     /**
      * Получение позиции
      */
@@ -191,6 +195,13 @@ export class Hero {
             this.setAnimation('Walk');
         } else if (!isMoving && this.activeAction?.getClip().name !== 'Idle') {
             this.setAnimation('Idle');
+        }
+
+        for (const weapon of this.weapons) {
+            weapon.updateWeapon(delta);
+        }
+        if (Hero.stats.hp < 0) {
+            this.die();
         }
     }
 
