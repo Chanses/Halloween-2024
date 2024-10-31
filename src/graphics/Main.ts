@@ -169,7 +169,7 @@ export class Main {
 
         this.initializeEnemies();
         Hero.stats.hp = Hero.stats.maxHp;
-        Hero.stats.exp = 0;
+        // Hero.stats.exp = 0;
 
         this.terrain = new Terrain(this.scene, this.hero);
     }

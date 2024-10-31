@@ -21,7 +21,7 @@ export class Controls {
      * Меш главного персонажа
      * @private
      */
-    private readonly hero: Mesh;
+    private readonly hero: Object3D;
 
     /**
      * Группа персонаж + оружие

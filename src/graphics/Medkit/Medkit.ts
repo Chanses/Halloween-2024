@@ -65,7 +65,7 @@ export class Medkit {
 
     public dropMedkit(pos: Vector3) {
         if (!this.medkitGeometry) {
-            console.warn('Medkit model is not loaded yet.');
+            console.warn('Medkit model is not loaded');
 
             return;
         }

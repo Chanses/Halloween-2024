@@ -22,8 +22,6 @@ export class Enemies {
 
     private static consumable: Consumable;
 
-    private static medkit: Medkit;
-
     private static enemySpeed: number = 0.06;
 
     public static init(scene: Scene, hero: Hero, consumable: Consumable, medkit: Medkit) {
@@ -33,7 +31,6 @@ export class Enemies {
         this.scene = scene;
         this.hero = hero;
         this.consumable = consumable;
-        this.medkit = medkit;
     }
 
     public static setSpawnRate(spawnRate: number) {
