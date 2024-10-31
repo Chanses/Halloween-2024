@@ -144,7 +144,6 @@ export class Main {
     private initializeEnemies() {
         Enemies.init(this.scene, this.hero, this.consumable, this.medkit);
         Enemies.setSpawnRate(1000);
-        Enemies.setEnemySpeed(0.06);
     }
 
     public togglePause() {

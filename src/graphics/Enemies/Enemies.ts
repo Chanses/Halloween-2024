@@ -18,6 +18,17 @@ export interface Enemy {
     };
 }
 
+const DEATH_ANIMATION_DURATION = 200;
+
+/*
+const ENEMY_STATS = [
+    { speed: 0.06, hp: 100, damage: 1, maxHp: 100 },
+    { speed: 0.08, hp: 150, damage: 2, maxHp: 150 },
+    { speed: 0.1, hp: 200, damage: 3, maxHp: 200 },
+];
+
+ */
+
 export class Enemies {
     private static readonly enemies: Enemy[] = [];
 
@@ -29,11 +40,9 @@ export class Enemies {
 
     private static consumable: Consumable;
 
-    private static enemySpeed: number = 0.06;
-
     private static enemyModel: Object3D | null = null;
 
-    private static readonly DEATH_ANIMATION_DURATION = 200;
+    // private static getEnemyStats(level: number): Omit<Enemy, 'mesh' | 'model'>
 
     public static init(scene: Scene, hero: Hero, consumable: Consumable, medkit: Medkit) {
         if (!scene || !hero || !consumable || !medkit) {
@@ -90,7 +99,7 @@ export class Enemies {
         this.scene.add(collisionMesh);
 
         const stats: Omit<Enemy, 'mesh' | 'model'> = {
-            speed: this.enemySpeed,
+            speed: 0.06,
             hp: 100,
             damage: 1,
             maxHp: 100,
@@ -107,7 +116,7 @@ export class Enemies {
         enemy.isDying = true;
         enemy.deathAnimation = {
             startTime: Date.now(),
-            duration: this.DEATH_ANIMATION_DURATION,
+            duration: DEATH_ANIMATION_DURATION,
         };
 
         if (enemy.model) {
@@ -214,10 +223,6 @@ export class Enemies {
                 this.generateEnemy();
             }, spawnRate);
         }
-    }
-
-    public static setEnemySpeed(speed: number) {
-        this.enemySpeed = speed;
     }
 
     public static getEnemies(): Enemy[] {

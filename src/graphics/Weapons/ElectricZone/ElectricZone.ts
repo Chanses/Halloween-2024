@@ -32,7 +32,7 @@ export class ElectricZone extends Weapon {
             side: DoubleSide,
         });
 
-        const geo = new CylinderGeometry(this.rad * 1.75, this.rad, 4, 64, 8, true);
+        const geo = new CylinderGeometry(this.rad * 1.25, this.rad, 4, 64, 8, true);
         this.mesh = new Mesh(geo, this.material);
         this.mesh.rotation.y = this.rad / 2;
         this.mesh.position.z = -this.rad / 2;
@@ -55,7 +55,7 @@ export class ElectricZone extends Weapon {
         for (const enemy of enemies) {
             const { mesh } = enemy;
 
-            if (this.hero.position.distanceTo(mesh.position) < this.rad) {
+            if (this.hero.position.distanceTo(mesh.position) < this.rad * 1.5) {
                 enemy.hp -= this.damage;
             }
         }
