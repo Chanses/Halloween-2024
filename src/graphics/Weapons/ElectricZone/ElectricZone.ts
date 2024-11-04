@@ -42,10 +42,6 @@ export class ElectricZone extends Weapon {
         super.setActive();
     }
 
-    public levelUp() {
-        super.levelUp();
-    }
-
     public updateWeapon(_delta: number) {
         this.time += _delta * 0.5;
         this.material.uniforms.time.value = this.time;

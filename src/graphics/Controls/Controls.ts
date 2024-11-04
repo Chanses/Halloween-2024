@@ -17,52 +17,20 @@ enum Direction {
 export class Controls {
     private readonly walkAction: AnimationAction | null = null;
 
-    /**
-     * Меш главного персонажа
-     * @private
-     */
     private readonly hero: Object3D;
 
-    /**
-     * Группа персонаж + оружие
-     * @private
-     */
     private readonly group: Mesh;
 
-    /**
-     * Нажатые в данный момент клавиши
-     * @private
-     */
     private keys: string[] = [];
 
-    /**
-     * Направление движения персонажа
-     * @private
-     */
     private direction: Direction | null = null;
 
-    /**
-     * Нажата ли какая-либо клавиша
-     * @private
-     */
     private pressed: boolean = false;
 
-    /**
-     * Текущий поворот персонажа
-     * @private
-     */
-    private rotation: number = 0;
+    private heroAngle: number = 0;
 
-    /**
-     * Значение к которому стремится поворот
-     * @private
-     */
     private angle: number = 0;
 
-    /**
-     * Ускорение персонажа
-     * @private
-     */
     private tilda: number = 0;
 
     private readonly DEBUG_DIRECTION: boolean = true;
@@ -83,11 +51,6 @@ export class Controls {
         window.addEventListener('keyup', this.handleKeyUp);
     }
 
-    /**
-     * Удаление нажатой клавиши
-     * @param key
-     * @private
-     */
     private deleteKey(key: string) {
         const idx = this.keys.indexOf(key);
 
@@ -96,11 +59,6 @@ export class Controls {
         }
     }
 
-    /**
-     * Добавлнение клавиши
-     * @param key
-     * @private
-     */
     private addKey(key: string) {
         const idx = this.keys.indexOf(key);
 
@@ -113,12 +71,6 @@ export class Controls {
         return this.pressed && this.keys.length > 0;
     }
 
-    /**
-     * Проверка клавиши на нажатие
-     * @param firstKey
-     * @param secondKey
-     * @private
-     */
     private checkKeyPressed(firstKey: string, secondKey?: string) {
         const isFirst = this.keys.indexOf(firstKey);
         if (!secondKey) {
@@ -130,11 +82,6 @@ export class Controls {
         return isFirst !== -1 && isSecond !== -1;
     }
 
-    /**
-     * Обработчик отпускания клавиши
-     * @param e
-     * @private
-     */
     private handleKeyUp(e: KeyboardEvent) {
         switch (e.code.toLowerCase()) {
             case 'keyw':
@@ -167,11 +114,6 @@ export class Controls {
         }
     }
 
-    /**
-     * Обработчик нажатия клавиши
-     * @param e
-     * @private
-     */
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
         if (this.walkAction && !this.walkAction.isRunning()) {
@@ -204,10 +146,6 @@ export class Controls {
         }
     }
 
-    /**
-     * Установка направления движения
-     * @private
-     */
     private setDirection() {
         if (this.keys.length === 1) {
             if (this.checkKeyPressed('top')) {
@@ -234,21 +172,11 @@ export class Controls {
         }
     }
 
-    /**
-     * Обновление поворота персонажа
-     * @param delta
-     * @private
-     */
     private updateRotation(delta: number) {
-        this.rotation = damp(this.rotation, (Math.PI / 180) * this.angle, 0.1, delta);
-        this.hero.rotation.y = this.rotation;
+        this.heroAngle = damp(this.heroAngle, (Math.PI / 180) * this.angle, 0.1, delta);
+        this.hero.rotation.y = this.heroAngle;
     }
 
-    /**
-     * Установка угла к которому нужно повернуться
-     * @param angle
-     * @private
-     */
     private setAngle(angle: number) {
         let sub = euclideanModulo(angle - this.angle, 360);
         if (sub > 180) {
@@ -257,10 +185,6 @@ export class Controls {
         this.angle += sub;
     }
 
-    /**
-     * Обработчик передвижения
-     * @private
-     */
     private updateMovement() {
         const speed = 0.065;
 
@@ -307,10 +231,6 @@ export class Controls {
         Hero.pos.copy(this.group.position);
     }
 
-    /**
-     * Отрисовка изменений
-     * @param delta
-     */
     public update(delta: number) {
         const speed = 0.08;
         if (this.pressed && this.keys.length > 0) {
@@ -323,16 +243,10 @@ export class Controls {
         this.updateRotation(delta);
     }
 
-    /**
-     * Получение координат персонажа
-     */
     public getPosition() {
         return new Vector2(this.group.position.x, this.group.position.z);
     }
 
-    /**
-     * Сброс ресурсов
-     */
     public dispose() {
         this.keys = [];
         window.removeEventListener('keydown', this.handleKeyPress);

@@ -5,8 +5,6 @@ import { FireZone } from '../Weapons/FireZone/FireZone';
 import { Controls } from '../Controls/Controls.ts';
 import { ElectricZone } from '../Weapons/ElectricZone/ElectricZone.ts';
 
-export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
-
 export interface HeroStats {
     hp: number;
     maxHp: number;
@@ -32,28 +30,12 @@ export class Hero {
 
     private activeAction: AnimationAction | null = null;
 
-    /**
-     * Основная группа для персонажа и оружий
-     * @private
-     */
     private readonly group: Mesh = new Mesh();
 
-    /**
-     * Меш персонажа
-     * @private
-     */
     private hero: Object3D | null = null;
 
-    /**
-     * Контролы
-     * @private
-     */
     private controls: Controls | null = null;
 
-    /**
-     * Активные оружия
-     * @private
-     */
     private readonly weapons: Weapon[] = [];
 
     public static pos: Vector3 = new Vector3();
@@ -94,11 +76,6 @@ export class Hero {
         });
     }
 
-    /**
-     * Проверка на уникальность оружия
-     * @param weapon
-     * @private
-     */
     private handleWeapon(weapon: Weapon) {
         const tw = this.weapons.findIndex((el) => el.type === weapon.type);
 
@@ -108,10 +85,6 @@ export class Hero {
         }
     }
 
-    /**
-     * Добавление нового оружия
-     * @param type
-     */
     public addWeapon(type: WeaponType) {
         switch (type) {
             case WeaponType.FireZone:
@@ -131,10 +104,6 @@ export class Hero {
         }
     }
 
-    /**
-     * Добаление здоровья
-     * @param hp
-     */
     public addHp(hp: number) {
         Hero.stats.hp += hp;
         if (Hero.stats.hp > Hero.stats.maxHp) {
@@ -142,27 +111,16 @@ export class Hero {
         }
     }
 
-    /**
-     * Добаление опыта опыта
-     * @param val
-     */
     public addExp(val: number) {
         Hero.stats.exp += val;
     }
 
-    /**
-     * Получить урон
-     * @param dmg
-     */
     public static getDamage(dmg: number) {
         this.stats.hp -= dmg;
     }
 
     public die() {}
 
-    /**
-     * Получение позиции
-     */
     public getPosition() {
         return this.group.position;
     }
@@ -176,16 +134,11 @@ export class Hero {
         }
     }
 
-    /**
-     * Обновление персонажа и оружий
-     * @param delta
-     */
     public update(delta: number) {
         if (this.controls) {
             this.controls.update(delta);
         }
 
-        // Метод в Controls для проверки движения
         const isMoving = this.controls?.isMoving();
 
         if (this.mixer) {
@@ -206,9 +159,6 @@ export class Hero {
         }
     }
 
-    /**
-     * Очищение ресурсов
-     */
     public dispose() {
         this.controls?.dispose();
     }
