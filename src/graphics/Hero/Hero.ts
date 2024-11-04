@@ -36,9 +36,9 @@ export class Hero {
 
     private readonly weapons: Weapon[] = [];
 
-    public static pos: Vector3 = new Vector3();
+    public pos: Vector3 = new Vector3();
 
-    public static stats: HeroStats = InitialStats;
+    public stats: HeroStats = InitialStats;
 
     public constructor(scene: Scene) {
         const loader = new GLTFLoader();
@@ -75,17 +75,17 @@ export class Hero {
     }
 
     public addHp(hp: number) {
-        Hero.stats.hp += hp;
-        if (Hero.stats.hp > Hero.stats.maxHp) {
-            Hero.stats.hp = Hero.stats.maxHp;
+        this.stats.hp += hp;
+        if (this.stats.hp > this.stats.maxHp) {
+            this.stats.hp = this.stats.maxHp;
         }
     }
 
     public addExp(val: number) {
-        Hero.stats.exp += val;
+        this.stats.exp += val;
     }
 
-    public static getDamage(dmg: number) {
+    public getDamage(dmg: number) {
         this.stats.hp -= dmg;
     }
 
@@ -126,6 +126,7 @@ export class Hero {
     public update(delta: number) {
         if (this.controls) {
             this.controls.update(delta);
+            this.pos.copy(this.group.position);
         }
 
         const isMoving = this.controls?.isMoving();
@@ -143,7 +144,7 @@ export class Hero {
         for (const weapon of this.weapons) {
             weapon.updateWeapon(delta);
         }
-        if (Hero.stats.hp < 0) {
+        if (this.stats.hp < 0) {
             this.die();
         }
     }

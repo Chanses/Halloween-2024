@@ -39,7 +39,7 @@ export class Main {
     public constructor(
         canvas: HTMLCanvasElement,
         timeEl: HTMLDivElement,
-        // hpCallback: (hp: number) => void,
+        hpCallback: (hp: number) => void,
     ) {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -77,7 +77,7 @@ export class Main {
             this.camera.lookAt(position);
         };
 
-        this.levels = new Levels(this.scene, timeEl, updateCamera);
+        this.levels = new Levels(this.scene, timeEl, hpCallback, updateCamera);
 
         this.resize();
         this.frameHandler.start();

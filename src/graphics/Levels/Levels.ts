@@ -18,7 +18,7 @@ export class Levels {
 
     private readonly timer: Timer;
 
-    // private readonly hpCallback: (hp: number) => void;
+    private readonly hpCallback: (hp: number) => void;
 
     private readonly frameHandler: FrameHandler;
 
@@ -31,7 +31,7 @@ export class Levels {
     public constructor(
         scene: Scene,
         timeEl: HTMLDivElement,
-        // hpCallback: (hp: number) => void,
+        hpCallback: (hp: number) => void,
         updateCameraCallback: (position: Vector3, delta: number) => void,
     ) {
         this.scene = scene;
@@ -40,7 +40,7 @@ export class Levels {
         this.medkit = new Medkit(this.scene, this.hero);
         this.timer = new Timer(timeEl);
         this.terrain = new Terrain(this.scene, this.hero);
-        // this.hpCallback = hpCallback;
+        this.hpCallback = hpCallback;
         this.updateCameraCallback = updateCameraCallback;
 
         this.frameHandler = new FrameHandler(this.update.bind(this));
@@ -58,10 +58,9 @@ export class Levels {
             this.consumable.checkPickUp(this.hero.getPosition());
             this.medkit.checkPickUp(this.hero.getPosition());
 
-            /*
             if (this.hpCallback) {
                 this.hpCallback(this.hero.stats.hp);
-            } */
+            }
             this.updateCameraCallback(this.hero.getPosition(), delta);
         }
     }
@@ -93,7 +92,7 @@ export class Levels {
         this.timer.clear();
 
         this.initializeEnemies();
-        // this.hero.stats.hp = this.hero.stats.maxHp;
+        this.hero.stats.hp = this.hero.stats.maxHp;
 
         this.terrain = new Terrain(this.scene, this.hero);
     }

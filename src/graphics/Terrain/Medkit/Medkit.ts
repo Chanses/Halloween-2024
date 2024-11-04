@@ -78,7 +78,7 @@ export class Medkit {
     }
 
     private pickMedkit(idx: number) {
-        if (Hero.stats.hp === Hero.stats.maxHp) {
+        if (this.hero.stats.hp === this.hero.stats.maxHp) {
             return;
         }
         this.hero.addHp(20);

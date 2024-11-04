@@ -101,7 +101,7 @@ export class Enemies {
         const stats: Omit<Enemy, 'mesh' | 'model'> = {
             speed: 0.06,
             hp: 100,
-            damage: 1,
+            damage: 10,
             maxHp: 100,
         };
 
@@ -196,7 +196,7 @@ export class Enemies {
             if (hp < 0) {
                 this.killEnemy(i);
             } else if (mesh.position.distanceTo(heroPos) < 0.5) {
-                Hero.getDamage(damage);
+                this.hero.getDamage(damage);
             }
         }
     }
