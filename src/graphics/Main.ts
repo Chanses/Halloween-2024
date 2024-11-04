@@ -12,10 +12,10 @@ import { FrameHandler } from '../helpers/FrameHandler';
 import { damp } from '../helpers/MathUtils';
 import { Terrain } from './Terrain/Terrain';
 import { Hero } from './Hero/Hero';
-import { Timer } from './Timer/Timer';
+import { Timer } from './Levels/Timer/Timer';
 import { Enemies } from './Enemies/Enemies';
-import { Consumable } from './Consumable/Consumable';
-import { Medkit } from './Medkit/Medkit.ts';
+import { Consumable } from './Combat/Consumable/Consumable';
+import { Medkit } from './Terrain/Medkit/Medkit.ts';
 
 const CAMERA_POSITION = new Vector3(0, 15, 0);
 const LIGHT_POSITION = new Vector3(50, 50, 50);

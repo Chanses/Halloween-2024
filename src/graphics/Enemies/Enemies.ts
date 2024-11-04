@@ -1,8 +1,8 @@
 import { BoxGeometry, Mesh, MeshBasicMaterial, Object3D, Scene } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Hero } from '../Hero/Hero';
-import { Consumable } from '../Consumable/Consumable.ts';
-import { Medkit } from '../Medkit/Medkit.ts';
+import { Consumable } from '../Combat/Consumable/Consumable.ts';
+import { Medkit } from '../Terrain/Medkit/Medkit.ts';
 
 export interface Enemy {
     mesh: Object3D;

@@ -9,9 +9,9 @@ import {
     Vector3,
 } from 'three';
 import { Enemies } from '../Enemies/Enemies';
-import { Consumable } from '../Consumable/Consumable.ts';
+import { Consumable } from '../Combat/Consumable/Consumable.ts';
 import { Hero } from '../Hero/Hero';
-import { Medkit } from '../Medkit/Medkit.ts';
+import { Medkit } from './Medkit/Medkit.ts';
 
 export interface SectorProps {
     x: number;

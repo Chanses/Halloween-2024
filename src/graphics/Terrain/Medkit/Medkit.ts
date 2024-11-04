@@ -1,7 +1,7 @@
 import { Object3D, Scene, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Hero } from '../Hero/Hero';
-import { SECTOR_SIZE, SectorProps } from '../Terrain/Terrain';
+import { Hero } from '../../Hero/Hero.ts';
+import { SECTOR_SIZE, SectorProps } from '../Terrain.ts';
 
 interface MedkitItem {
     mesh: Object3D;

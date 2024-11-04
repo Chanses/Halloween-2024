@@ -1,6 +1,6 @@
 import { AnimationAction, AxesHelper, Mesh, Object3D, Vector2 } from 'three';
-import { clamp, damp, euclideanModulo } from '../../helpers/MathUtils';
-import { Hero } from '../Hero/Hero';
+import { clamp, damp, euclideanModulo } from '../../../helpers/MathUtils.ts';
+import { Hero } from '../Hero.ts';
 
 enum Direction {
     Idle,

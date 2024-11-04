@@ -1,9 +1,7 @@
 import { AnimationAction, AnimationMixer, Mesh, Object3D, PointLight, Scene, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { Weapon, WeaponType } from '../Weapons/Weapon';
-import { FireZone } from '../Weapons/FireZone/FireZone';
-import { Controls } from '../Controls/Controls.ts';
-import { ElectricZone } from '../Weapons/ElectricZone/ElectricZone.ts';
+import { Weapon, WeaponType } from './Weapons/Weapon.ts';
+import { Controls } from './Controls/Controls.ts';
 
 export interface HeroStats {
     hp: number;
@@ -71,37 +69,9 @@ export class Hero {
                 this.group.add(this.hero);
                 scene.add(this.group);
                 this.controls = new Controls(this.hero, this.group, this.walkAction);
-                this.addWeapon(WeaponType.ElectricZone);
+                this.initializeWeapons();
             }
         });
-    }
-
-    private handleWeapon(weapon: Weapon) {
-        const tw = this.weapons.findIndex((el) => el.type === weapon.type);
-
-        if (tw === -1) {
-            this.weapons.push(weapon);
-            weapon.setActive();
-        }
-    }
-
-    public addWeapon(type: WeaponType) {
-        switch (type) {
-            case WeaponType.FireZone:
-                {
-                    const weapon = new FireZone(this.group);
-                    this.handleWeapon(weapon);
-                }
-                break;
-            case WeaponType.ElectricZone:
-                {
-                    const weapon = new ElectricZone(this.group);
-                    this.handleWeapon(weapon);
-                }
-                break;
-            default:
-                break;
-        }
     }
 
     public addHp(hp: number) {
@@ -117,6 +87,25 @@ export class Hero {
 
     public static getDamage(dmg: number) {
         this.stats.hp -= dmg;
+    }
+
+    private initializeWeapons() {
+        // this.addWeapon(WeaponType.FireZone);
+        this.addWeapon(WeaponType.ElectricZone);
+    }
+
+    private handleWeapon(type: WeaponType) {
+        const existingWeapon = this.weapons.find((weapon) => weapon.type === type);
+
+        if (!existingWeapon) {
+            const weapon = new Weapon(type, this.group);
+            this.weapons.push(weapon);
+            weapon.setActive();
+        }
+    }
+
+    public addWeapon(type: WeaponType) {
+        this.handleWeapon(type);
     }
 
     public die() {}

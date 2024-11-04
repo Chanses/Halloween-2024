@@ -1,6 +1,6 @@
 import { DodecahedronGeometry, Mesh, MeshStandardMaterial, Scene, Vector3 } from 'three';
-import { SECTOR_SIZE, SectorProps } from '../Terrain/Terrain';
-import { Hero } from '../Hero/Hero';
+import { SECTOR_SIZE, SectorProps } from '../../Terrain/Terrain.ts';
+import { Hero } from '../../Hero/Hero.ts';
 
 export enum ConsumableItems {
     AidKit,
