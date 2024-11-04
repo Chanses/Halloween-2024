@@ -41,10 +41,6 @@ export class FireZone extends Weapon {
         super.setActive();
     }
 
-    public levelUp() {
-        super.levelUp();
-    }
-
     public updateWeapon(_delta: number) {
         this.time += _delta * 0.01;
         this.material.uniforms.time.value = this.time;
