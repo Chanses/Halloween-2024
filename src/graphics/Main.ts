@@ -104,6 +104,18 @@ export class Main {
         this.renderer.setSize(w, h, false);
     }
 
+    public togglePause(): void {
+        this.levels.togglePause();
+    }
+
+    public isPaused(): boolean {
+        return this.levels.isPaused();
+    }
+
+    public restartGame(): void {
+        this.levels.restartGame();
+    }
+
     public dispose() {
         this.resizeObserver.disconnect();
         this.frameHandler.stop();
