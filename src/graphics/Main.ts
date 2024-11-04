@@ -10,12 +10,7 @@ import {
 } from 'three';
 import { FrameHandler } from '../helpers/FrameHandler';
 import { damp } from '../helpers/MathUtils';
-import { Terrain } from './Terrain/Terrain';
-import { Hero } from './Hero/Hero';
-import { Timer } from './Levels/Timer/Timer';
-import { Enemies } from './Enemies/Enemies';
-import { Consumable } from './Combat/Consumable/Consumable';
-import { Medkit } from './Terrain/Medkit/Medkit.ts';
+import { Levels } from './Levels/Levels.ts';
 
 const CAMERA_POSITION = new Vector3(0, 15, 0);
 const LIGHT_POSITION = new Vector3(50, 50, 50);
@@ -35,30 +30,16 @@ export class Main {
 
     private readonly frameHandler: FrameHandler;
 
-    private readonly hero: Hero;
-
     private readonly dirLight: DirectionalLight;
 
     private readonly ambLight: AmbientLight;
 
-    private readonly cameraPos: Vector3 = new Vector3();
-
-    private terrain: Terrain;
-
-    private readonly medkit: Medkit;
-
-    private readonly consumable: Consumable;
-
-    private paused: boolean = false;
-
-    private readonly timer: Timer;
-
-    private readonly hpCallback: (hp: number) => void;
+    private readonly levels: Levels;
 
     public constructor(
         canvas: HTMLCanvasElement,
         timeEl: HTMLDivElement,
-        hpCallback: (hp: number) => void,
+        // hpCallback: (hp: number) => void,
     ) {
         this.canvas = canvas;
         this.renderer = new WebGLRenderer({ canvas, alpha: true, antialias: true });
@@ -74,12 +55,6 @@ export class Main {
         this.scene.fog = new FogExp2('#04343f', 0.04);
 
         this.ambLight = new AmbientLight('#596987', 10);
-        this.hero = new Hero(this.scene);
-        this.terrain = new Terrain(this.scene, this.hero);
-
-        this.consumable = new Consumable(this.scene, this.hero);
-
-        this.medkit = new Medkit(this.scene, this.hero);
 
         this.scene.add(this.camera, this.dirLight, this.ambLight);
 
@@ -91,38 +66,26 @@ export class Main {
 
         this.frameHandler = new FrameHandler(this.update);
 
-        this.timer = new Timer(timeEl);
-        this.initializeEnemies();
+        const updateCamera = (position: Vector3, delta: number) => {
+            const cameraPos = new Vector3().copy(position).add(CAMERA_FOLLOW_OFFSET);
+
+            this.camera.position.set(
+                damp(this.camera.position.x, cameraPos.x, CAMERA_DAMPING, delta),
+                damp(this.camera.position.y, cameraPos.y, CAMERA_DAMPING, delta),
+                damp(this.camera.position.z, cameraPos.z, CAMERA_DAMPING, delta),
+            );
+            this.camera.lookAt(position);
+        };
+
+        this.levels = new Levels(this.scene, timeEl, updateCamera);
 
         this.resize();
         this.frameHandler.start();
-        this.hpCallback = hpCallback;
     }
 
-    private update(_delta: number) {
-        this.timer.update();
-        this.hero.update(_delta);
-        this.terrain.update(_delta, this.hero);
-        Enemies.update(_delta);
-        this.consumable.checkPickUp(this.hero.getPosition());
-        this.medkit.checkPickUp(this.hero.getPosition());
-        if (this.hpCallback) {
-            this.hpCallback(Hero.stats.hp);
-        }
-
-        this.updateCamera(_delta);
+    private update(delta: number) {
+        this.levels.update(delta);
         this.render();
-    }
-
-    private updateCamera(delta: number) {
-        const heroPos = this.hero.getPosition();
-        this.cameraPos.copy(heroPos).add(CAMERA_FOLLOW_OFFSET);
-        this.camera.position.set(
-            damp(this.camera.position.x, this.cameraPos.x, CAMERA_DAMPING, delta),
-            damp(this.camera.position.y, this.cameraPos.y, CAMERA_DAMPING, delta),
-            damp(this.camera.position.z, this.cameraPos.z, CAMERA_DAMPING, delta),
-        );
-        this.camera.lookAt(heroPos);
     }
 
     private render() {
@@ -141,50 +104,9 @@ export class Main {
         this.renderer.setSize(w, h, false);
     }
 
-    private initializeEnemies() {
-        Enemies.init(this.scene, this.hero, this.consumable, this.medkit);
-        Enemies.setSpawnRate(1000);
-    }
-
-    public togglePause() {
-        this.paused = !this.paused;
-
-        if (this.paused) {
-            Enemies.setSpawnRate(0);
-            this.frameHandler.stop();
-        } else {
-            this.timer.updateTimeStart();
-            Enemies.setSpawnRate(1000);
-            this.frameHandler.start();
-        }
-    }
-
-    public isPaused(): boolean {
-        return this.paused;
-    }
-
-    public restartGame() {
-        Enemies.dispose();
-        if (this.consumable) {
-            this.consumable.dispose();
-        }
-
-        this.terrain.dispose();
-        this.timer.clear();
-
-        this.render();
-
-        this.initializeEnemies();
-        Hero.stats.hp = Hero.stats.maxHp;
-        // Hero.stats.exp = 0;
-
-        this.terrain = new Terrain(this.scene, this.hero);
-    }
-
     public dispose() {
         this.resizeObserver.disconnect();
         this.frameHandler.stop();
-        this.terrain.dispose();
-        this.hero.dispose();
+        this.levels.dispose();
     }
 }
