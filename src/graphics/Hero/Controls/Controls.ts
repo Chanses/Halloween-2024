@@ -1,5 +1,6 @@
-import { AnimationAction, AxesHelper, Mesh, Object3D, Vector2 } from 'three';
+import { Vector2 } from 'three';
 import { clamp, damp, euclideanModulo } from '../../../helpers/MathUtils.ts';
+import { Hero } from '../Hero.ts';
 
 enum Direction {
     Idle,
@@ -14,11 +15,7 @@ enum Direction {
 }
 
 export class Controls {
-    private readonly walkAction: AnimationAction | null = null;
-
-    private readonly hero: Object3D;
-
-    private readonly group: Mesh;
+    private readonly hero: Hero;
 
     private keys: string[] = [];
 
@@ -32,17 +29,8 @@ export class Controls {
 
     private tilda: number = 0;
 
-    private readonly DEBUG_DIRECTION: boolean = true;
-
-    public constructor(hero: Object3D, group: Mesh, walkAction: AnimationAction | null) {
+    public constructor(hero: Hero) {
         this.hero = hero;
-        this.group = group;
-        this.walkAction = walkAction;
-
-        if (this.DEBUG_DIRECTION) {
-            const axesHelper = new AxesHelper();
-            this.hero.add(axesHelper);
-        }
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -105,9 +93,7 @@ export class Controls {
 
         if (this.keys.length === 0) {
             this.pressed = false;
-            if (this.walkAction) {
-                this.walkAction.stop();
-            } // Останавливаем анимацию, если персонаж стоит
+            this.hero.stopWalkAnimation();
         } else {
             this.setDirection();
         }
@@ -115,9 +101,8 @@ export class Controls {
 
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
-        if (this.walkAction && !this.walkAction.isRunning()) {
-            this.walkAction.play(); // Включаем анимацию при движении
-        }
+        this.hero.playWalkAnimation();
+
         switch (e.code.toLowerCase()) {
             case 'keyw':
             case 'arrowup':
@@ -173,7 +158,7 @@ export class Controls {
 
     private updateRotation(delta: number) {
         this.heroAngle = damp(this.heroAngle, (Math.PI / 180) * this.angle, 0.1, delta);
-        this.hero.rotation.y = this.heroAngle;
+        this.hero.setRotation(this.heroAngle);
     }
 
     private setAngle(angle: number) {
@@ -189,39 +174,39 @@ export class Controls {
 
         switch (this.direction) {
             case Direction.Top:
-                this.group.position.z -= this.tilda * speed;
+                this.hero.moveZ(-this.tilda * speed);
                 this.setAngle(0);
                 break;
             case Direction.Down:
-                this.group.position.z += this.tilda * speed;
+                this.hero.moveZ(this.tilda * speed);
                 this.setAngle(180);
                 break;
             case Direction.Right:
-                this.group.position.x += this.tilda * speed;
+                this.hero.moveX(this.tilda * speed);
                 this.setAngle(-90);
                 break;
             case Direction.Left:
-                this.group.position.x -= this.tilda * speed;
+                this.hero.moveX(-this.tilda * speed);
                 this.setAngle(90);
                 break;
             case Direction.TopLeft:
-                this.group.position.z -= this.tilda * speed;
-                this.group.position.x -= this.tilda * speed;
+                this.hero.moveZ(-this.tilda * speed);
+                this.hero.moveX(-this.tilda * speed);
                 this.setAngle(45);
                 break;
             case Direction.TopRight:
-                this.group.position.z -= this.tilda * speed;
-                this.group.position.x += this.tilda * speed;
+                this.hero.moveZ(-this.tilda * speed);
+                this.hero.moveX(this.tilda * speed);
                 this.setAngle(-45);
                 break;
             case Direction.DownRight:
-                this.group.position.z += this.tilda * speed;
-                this.group.position.x += this.tilda * speed;
+                this.hero.moveZ(this.tilda * speed);
+                this.hero.moveX(this.tilda * speed);
                 this.setAngle(-135);
                 break;
             case Direction.DownLeft:
-                this.group.position.z += this.tilda * speed;
-                this.group.position.x -= this.tilda * speed;
+                this.hero.moveZ(this.tilda * speed);
+                this.hero.moveX(-this.tilda * speed);
                 this.setAngle(-225);
                 break;
             default:
@@ -242,7 +227,7 @@ export class Controls {
     }
 
     public getPosition() {
-        return new Vector2(this.group.position.x, this.group.position.z);
+        return new Vector2(this.hero.getX(), this.hero.getZ());
     }
 
     public dispose() {

@@ -1,20 +1,7 @@
-import {
-    AnimationAction,
-    AnimationMixer,
-    LoadingManager,
-    LoopOnce,
-    Mesh,
-    Object3D,
-    PointLight,
-    Scene,
-    Vector3,
-} from 'three';
+import { AnimationAction, AnimationMixer, Mesh, Object3D, PointLight, Scene, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { Weapon, WeaponType } from './Weapons/Weapon.ts';
 import { Controls } from './Controls/Controls.ts';
-
-export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
 export interface HeroStats {
     hp: number;
@@ -33,17 +20,15 @@ export const InitialStats: HeroStats = {
 };
 
 export class Hero {
-    private readonly walkAction: AnimationAction | null = null;
-
     private mixer: AnimationMixer | null = null;
 
     private readonly animationsMap: Map<string, AnimationAction> = new Map();
 
     private activeAction: AnimationAction | null = null;
 
-    private readonly group: Mesh = new Mesh();
+    private readonly heroGroup: Mesh = new Mesh();
 
-    private hero: Object3D | null = null;
+    private heroModel: Object3D | null = null;
 
     private controls: Controls | null = null;
 
@@ -53,8 +38,12 @@ export class Hero {
 
     public stats: HeroStats = InitialStats;
 
-    public constructor(scene: Scene, loadingManager: LoadingManager) {
-        const loader = new GLTFLoader(loadingManager);
+    public constructor(scene: Scene) {
+        this.loadModel(scene);
+    }
+
+    public loadModel(scene: Scene) {
+        const loader = new GLTFLoader();
         loader.load('src/models/Soldier.glb', (gltf) => {
             const model = gltf.scene;
             model.traverse((object: any) => {
@@ -64,11 +53,11 @@ export class Hero {
                 }
             });
             model.scale.setScalar(2);
-            this.hero = model;
+            this.heroModel = model;
             const light = new PointLight('#e4de27', 100);
             light.position.set(0, 5, 0);
-            this.group.add(light);
-            this.mixer = new AnimationMixer(this.hero);
+            this.heroGroup.add(light);
+            this.mixer = new AnimationMixer(this.heroModel);
             gltf.animations.forEach((clip) => {
                 const action = this.mixer!.clipAction(clip);
                 this.animationsMap.set(clip.name, action);
@@ -78,20 +67,10 @@ export class Hero {
                 }
             });
 
-            const fbxLoader = new FBXLoader(loadingManager);
-            fbxLoader.load('src/models/DeathAnimation.fbx', (fbx) => {
-                fbx.animations.forEach((clip) => {
-                    if (clip.name === 'mixamo.com') {
-                        const action = this.mixer!.clipAction(clip);
-                        this.animationsMap.set(clip.name, action);
-                    }
-                });
-            });
-
-            if (this.hero) {
-                this.group.add(this.hero);
-                scene.add(this.group);
-                this.controls = new Controls(this.hero, this.group, this.walkAction);
+            if (this.heroModel) {
+                this.heroGroup.add(this.heroModel);
+                scene.add(this.heroGroup);
+                this.controls = new Controls(this);
                 this.initializeWeapons();
             }
         });
@@ -113,42 +92,94 @@ export class Hero {
     }
 
     private initializeWeapons() {
-        // this.addWeapon(WeaponType.FireZone);
-        this.addWeapon(WeaponType.ElectricZone);
+        this.handleWeapon(WeaponType.ElectricZone);
+        // this.handleWeapon(WeaponType.FireZone);
     }
 
     private handleWeapon(type: WeaponType) {
         const existingWeapon = this.weapons.find((weapon) => weapon.type === type);
 
         if (!existingWeapon) {
-            const weapon = new Weapon(type, this.group);
+            const weapon = new Weapon(type, this.heroGroup);
             this.weapons.push(weapon);
             weapon.setActive();
         }
     }
 
-    public addWeapon(type: WeaponType) {
-        this.handleWeapon(type);
-    }
-
-    public die() {
-        if (this.animationsMap.has('mixamo.com')) {
-            const deathAction = this.animationsMap.get('mixamo.com');
-            if (deathAction) {
-                this.setAnimation('mixamo.com');
-                deathAction.clampWhenFinished = true;
-                deathAction.loop = LoopOnce;
-            }
-        } else {
-            console.error('Death animation not found');
+    public setRotation(angle: number) {
+        if (this.heroModel) {
+            this.heroModel.rotation.y = angle;
         }
     }
 
-    public getPosition() {
-        return this.group.position;
+    public moveX(value: number) {
+        if (this.heroGroup) {
+            this.heroGroup.position.x += value;
+            this.pos.copy(this.heroGroup.position);
+        }
     }
 
-    private setAnimation(name: string) {
+    public moveZ(value: number) {
+        if (this.heroGroup) {
+            this.heroGroup.position.z += value;
+            this.pos.copy(this.heroGroup.position);
+        }
+    }
+
+    public getX(): number {
+        return this.heroGroup.position.x;
+    }
+
+    public getZ(): number {
+        return this.heroGroup.position.z;
+    }
+
+    public stopWalkAnimation() {
+        if (this.activeAction && this.activeAction.getClip().name === 'Walk') {
+            this.setMotionAnimation('Idle');
+        }
+    }
+
+    public playWalkAnimation() {
+        if (this.activeAction?.getClip().name !== 'Walk') {
+            this.setMotionAnimation('Walk');
+        }
+    }
+
+    public die() {
+        if (this.heroModel) {
+            this.heroModel.traverse((object: any) => {
+                if (object.isMesh) {
+                    const { material } = object;
+                    material.transparent = true;
+                    material.opacity = 0.5;
+                    material.color.setRGB(1, 0, 0);
+                }
+            });
+        }
+    }
+
+    public reset() {
+        if (this.heroModel) {
+            this.heroModel.traverse((object: any) => {
+                if (object.isMesh) {
+                    const { material } = object;
+                    material.transparent = false;
+                    material.opacity = 1;
+                    material.color.setRGB(1, 1, 1);
+                }
+            });
+        }
+        this.setMotionAnimation('Idle');
+        this.stats = { ...InitialStats };
+        this.stats.hp = this.stats.maxHp;
+    }
+
+    public getPosition() {
+        return this.heroGroup.position;
+    }
+
+    private setMotionAnimation(name: string) {
         const newAction = this.animationsMap.get(name);
         if (newAction && this.activeAction !== newAction) {
             this.activeAction?.fadeOut(0.2);
@@ -160,7 +191,7 @@ export class Hero {
     public update(delta: number) {
         if (this.controls) {
             this.controls.update(delta);
-            this.pos.copy(this.group.position);
+            this.pos.copy(this.heroGroup.position);
         }
 
         const isMoving = this.controls?.isMoving();
@@ -170,9 +201,9 @@ export class Hero {
         }
 
         if (isMoving && this.activeAction?.getClip().name !== 'Walk') {
-            this.setAnimation('Walk');
+            this.setMotionAnimation('Walk');
         } else if (!isMoving && this.activeAction?.getClip().name !== 'Idle') {
-            this.setAnimation('Idle');
+            this.setMotionAnimation('Idle');
         }
 
         for (const weapon of this.weapons) {

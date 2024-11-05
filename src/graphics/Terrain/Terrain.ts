@@ -151,7 +151,7 @@ export class Terrain {
 
     private loadTreeModel() {
         const loader = new GLTFLoader();
-        loader.load('src/models/mushroom__tree.glb', (gltf) => {
+        loader.load('src/models/mushroom_min.glb', (gltf) => {
             const model = gltf.scene;
             model.traverse((object) => {
                 if (object) {

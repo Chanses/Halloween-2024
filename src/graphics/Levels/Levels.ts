@@ -92,7 +92,7 @@ export class Levels {
         this.timer.clear();
 
         this.initializeEnemies();
-        this.hero.stats.hp = this.hero.stats.maxHp;
+        this.hero.reset();
 
         this.terrain = new Terrain(this.scene, this.hero);
     }
