@@ -1,6 +1,7 @@
 import {
     AnimationAction,
     AnimationMixer,
+    LoadingManager,
     LoopOnce,
     Mesh,
     Object3D,
@@ -52,8 +53,8 @@ export class Hero {
 
     public stats: HeroStats = InitialStats;
 
-    public constructor(scene: Scene) {
-        const loader = new GLTFLoader();
+    public constructor(scene: Scene, loadingManager: LoadingManager) {
+        const loader = new GLTFLoader(loadingManager);
         loader.load('src/models/Soldier.glb', (gltf) => {
             const model = gltf.scene;
             model.traverse((object: any) => {
@@ -77,7 +78,7 @@ export class Hero {
                 }
             });
 
-            const fbxLoader = new FBXLoader();
+            const fbxLoader = new FBXLoader(loadingManager);
             fbxLoader.load('src/models/DeathAnimation.fbx', (fbx) => {
                 fbx.animations.forEach((clip) => {
                     if (clip.name === 'mixamo.com') {
