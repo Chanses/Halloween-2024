@@ -1,5 +1,15 @@
-import { AnimationAction, AnimationMixer, Mesh, Object3D, PointLight, Scene, Vector3 } from 'three';
+import {
+    AnimationAction,
+    AnimationMixer,
+    LoopOnce,
+    Mesh,
+    Object3D,
+    PointLight,
+    Scene,
+    Vector3,
+} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
 import { Controls } from '../Controls/Controls.ts';
@@ -18,7 +28,7 @@ export interface HeroStats {
 export const InitialStats: HeroStats = {
     hp: 100,
     maxHp: 100,
-    speed: 0.5,
+    speed: 1.5,
     defend: 0,
     exp: 0,
 };
@@ -83,6 +93,19 @@ export class Hero {
                     this.activeAction = action;
                     this.activeAction.play();
                 }
+            });
+
+            const fbxLoader = new FBXLoader();
+            fbxLoader.load('src/models/DeathAnimation.fbx', (fbx) => {
+                console.log('FBX file loaded:', fbx);
+                fbx.animations.forEach((clip) => {
+                    console.log('FBX animation:', clip.name);
+                    if (clip.name === 'mixamo.com') {
+                        const action = this.mixer!.clipAction(clip);
+                        this.animationsMap.set(clip.name, action);
+                        console.log('Death animation loaded:', clip.name);
+                    }
+                });
             });
 
             if (this.hero) {
@@ -158,7 +181,19 @@ export class Hero {
         this.stats.hp -= dmg;
     }
 
-    public die() {}
+    public die() {
+        console.log('Die method called');
+        if (this.animationsMap.has('mixamo.com')) {
+            const deathAction = this.animationsMap.get('mixamo.com');
+            if (deathAction) {
+                this.setAnimation('mixamo.com');
+                deathAction.clampWhenFinished = true;
+                deathAction.loop = LoopOnce;
+            }
+        } else {
+            console.error('Death animation not found');
+        }
+    }
 
     /**
      * Получение позиции
@@ -201,7 +236,8 @@ export class Hero {
         for (const weapon of this.weapons) {
             weapon.updateWeapon(delta);
         }
-        if (Hero.stats.hp < 0) {
+        if (Hero.stats.hp <= 0) {
+            console.log('Умер');
             this.die();
         }
     }
