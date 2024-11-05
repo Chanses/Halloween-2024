@@ -53,7 +53,7 @@ export class Enemies {
         this.consumable = consumable;
 
         const loader = new GLTFLoader();
-        loader.load('src/models/alien.glb', (gltf) => {
+        loader.load('src/models/alien_flying_min.glb', (gltf) => {
             const model = gltf.scene;
             model.traverse((object: any) => {
                 if (object.isMesh) {
@@ -61,7 +61,7 @@ export class Enemies {
                     object.receiveShadow = true;
                 }
             });
-            model.scale.setScalar(0.7);
+            model.scale.setScalar(10);
             this.enemyModel = model;
         });
     }

@@ -1,15 +1,5 @@
-import {
-    AnimationAction,
-    AnimationMixer,
-    LoopOnce,
-    Mesh,
-    Object3D,
-    PointLight,
-    Scene,
-    Vector3,
-} from 'three';
+import { AnimationAction, AnimationMixer, Mesh, Object3D, PointLight, Scene, Vector3 } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { Weapon, WeaponType } from './Weapons/Weapon.ts';
 import { Controls } from './Controls/Controls.ts';
 
@@ -36,9 +26,9 @@ export class Hero {
 
     private activeAction: AnimationAction | null = null;
 
-    private readonly group: Mesh = new Mesh();
+    private readonly heroGroup: Mesh = new Mesh();
 
-    private hero: Object3D | null = null;
+    private heroModel: Object3D | null = null;
 
     private controls: Controls | null = null;
 
@@ -63,11 +53,11 @@ export class Hero {
                 }
             });
             model.scale.setScalar(2);
-            this.hero = model;
+            this.heroModel = model;
             const light = new PointLight('#e4de27', 100);
             light.position.set(0, 5, 0);
-            this.group.add(light);
-            this.mixer = new AnimationMixer(this.hero);
+            this.heroGroup.add(light);
+            this.mixer = new AnimationMixer(this.heroModel);
             gltf.animations.forEach((clip) => {
                 const action = this.mixer!.clipAction(clip);
                 this.animationsMap.set(clip.name, action);
@@ -77,19 +67,9 @@ export class Hero {
                 }
             });
 
-            const fbxLoader = new FBXLoader();
-            fbxLoader.load('src/models/DeathAnimation.fbx', (fbx) => {
-                fbx.animations.forEach((clip) => {
-                    if (clip.name === 'mixamo.com') {
-                        const action = this.mixer!.clipAction(clip);
-                        this.animationsMap.set(clip.name, action);
-                    }
-                });
-            });
-
-            if (this.hero) {
-                this.group.add(this.hero);
-                scene.add(this.group);
+            if (this.heroModel) {
+                this.heroGroup.add(this.heroModel);
+                scene.add(this.heroGroup);
                 this.controls = new Controls(this);
                 this.initializeWeapons();
             }
@@ -120,46 +100,46 @@ export class Hero {
         const existingWeapon = this.weapons.find((weapon) => weapon.type === type);
 
         if (!existingWeapon) {
-            const weapon = new Weapon(type, this.group);
+            const weapon = new Weapon(type, this.heroGroup);
             this.weapons.push(weapon);
             weapon.setActive();
         }
     }
 
     public setRotation(angle: number) {
-        if (this.hero) {
-            this.hero.rotation.y = angle;
+        if (this.heroModel) {
+            this.heroModel.rotation.y = angle;
         }
     }
 
     public setPosition(x: number, z: number) {
-        if (this.group) {
-            this.group.position.x = x;
-            this.group.position.z = z;
-            this.pos.copy(this.group.position);
+        if (this.heroGroup) {
+            this.heroGroup.position.x = x;
+            this.heroGroup.position.z = z;
+            this.pos.copy(this.heroGroup.position);
         }
     }
 
     public moveX(value: number) {
-        if (this.group) {
-            this.group.position.x += value;
-            this.pos.copy(this.group.position);
+        if (this.heroGroup) {
+            this.heroGroup.position.x += value;
+            this.pos.copy(this.heroGroup.position);
         }
     }
 
     public moveZ(value: number) {
-        if (this.group) {
-            this.group.position.z += value;
-            this.pos.copy(this.group.position);
+        if (this.heroGroup) {
+            this.heroGroup.position.z += value;
+            this.pos.copy(this.heroGroup.position);
         }
     }
 
     public getX(): number {
-        return this.group.position.x;
+        return this.heroGroup.position.x;
     }
 
     public getZ(): number {
-        return this.group.position.z;
+        return this.heroGroup.position.z;
     }
 
     public stopWalkAnimation() {
@@ -175,20 +155,35 @@ export class Hero {
     }
 
     public die() {
-        if (this.animationsMap.has('mixamo.com')) {
-            const deathAction = this.animationsMap.get('mixamo.com');
-            if (deathAction) {
-                this.setMotionAnimation('mixamo.com');
-                deathAction.clampWhenFinished = true;
-                deathAction.loop = LoopOnce;
-            }
-        } else {
-            console.error('Death animation not found');
+        if (this.heroModel) {
+            this.heroModel.traverse((object: any) => {
+                if (object.isMesh) {
+                    const { material } = object;
+                    material.transparent = true;
+                    material.opacity = 0.5;
+                    material.color.setRGB(1, 0, 0);
+                }
+            });
         }
     }
 
+    public reset() {
+        if (this.heroModel) {
+            this.heroModel.traverse((object: any) => {
+                if (object.isMesh) {
+                    const { material } = object;
+                    material.transparent = false;
+                    material.opacity = 1;
+                    material.color.setRGB(1, 1, 1);
+                }
+            });
+        }
+        this.stats = { ...InitialStats };
+        this.setMotionAnimation('Idle');
+    }
+
     public getPosition() {
-        return this.group.position;
+        return this.heroGroup.position;
     }
 
     private setMotionAnimation(name: string) {
@@ -203,7 +198,7 @@ export class Hero {
     public update(delta: number) {
         if (this.controls) {
             this.controls.update(delta);
-            this.pos.copy(this.group.position);
+            this.pos.copy(this.heroGroup.position);
         }
 
         const isMoving = this.controls?.isMoving();
