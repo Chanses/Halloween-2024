@@ -164,6 +164,18 @@ export class Hero {
         return this.group.position.z;
     }
 
+    public stopWalkAnimation() {
+        if (this.activeAction && this.activeAction.getClip().name === 'Walk') {
+            this.setMotionAnimation('Idle');
+        }
+    }
+
+    public playWalkAnimation() {
+        if (this.activeAction?.getClip().name !== 'Walk') {
+            this.setMotionAnimation('Walk');
+        }
+    }
+
     public die() {
         if (this.animationsMap.has('mixamo.com')) {
             const deathAction = this.animationsMap.get('mixamo.com');

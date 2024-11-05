@@ -1,4 +1,4 @@
-import { AnimationAction, Vector2 } from 'three';
+import { Vector2 } from 'three';
 import { clamp, damp, euclideanModulo } from '../../../helpers/MathUtils.ts';
 import { Hero } from '../Hero.ts';
 
@@ -15,8 +15,6 @@ enum Direction {
 }
 
 export class Controls {
-    private readonly walkAction: AnimationAction | null = null;
-
     private readonly hero: Hero;
 
     private keys: string[] = [];
@@ -31,9 +29,8 @@ export class Controls {
 
     private tilda: number = 0;
 
-    public constructor(hero: Hero, walkAction: AnimationAction | null) {
+    public constructor(hero: Hero) {
         this.hero = hero;
-        this.walkAction = walkAction;
 
         this.handleKeyPress = this.handleKeyPress.bind(this);
         this.handleKeyUp = this.handleKeyUp.bind(this);
@@ -96,9 +93,7 @@ export class Controls {
 
         if (this.keys.length === 0) {
             this.pressed = false;
-            if (this.walkAction) {
-                this.walkAction.stop();
-            } // Останавливаем анимацию, если персонаж стоит
+            this.hero.stopWalkAnimation();
         } else {
             this.setDirection();
         }
@@ -106,9 +101,8 @@ export class Controls {
 
     private handleKeyPress(e: KeyboardEvent) {
         this.pressed = true;
-        if (this.walkAction && !this.walkAction.isRunning()) {
-            this.walkAction.play(); // Включаем анимацию при движении
-        }
+        this.hero.playWalkAnimation();
+
         switch (e.code.toLowerCase()) {
             case 'keyw':
             case 'arrowup':
