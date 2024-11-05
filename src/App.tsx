@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { clsx } from 'clsx';
 import css from './App.module.scss';
 import { Main } from './graphics/Main';
 
@@ -7,6 +8,7 @@ function App() {
     const timeElRef = useRef<HTMLDivElement | null>(null);
     const scene = useRef<Main>();
     const [isPaused, setIsPaused] = useState<boolean>(false);
+    const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
     const [heroHp, setHeroHp] = useState<number>(100); // State for Hero's HP
 
     const handleEscapeKeyPress = useCallback((event: KeyboardEvent) => {
@@ -52,6 +54,11 @@ function App() {
         }
     }, [handleEscapeKeyPress]);
 
+    const handleStartGame = () => {
+        setIsGameStarted(true);
+        scene.current?.restartGame();
+    };
+
     return (
         <div className={css.wrapper}>
             <div className={css.info}>
@@ -64,11 +71,24 @@ function App() {
                 <div className={css.info__time} ref={timeElRef}>
                     00:00
                 </div>
-                <button disabled={heroHp < 0} className={css.pause} onClick={togglePause}>
-                    {isPaused ? 'Продолжить' : 'Остановить'}
-                </button>
+                {isGameStarted && (
+                    <button disabled={heroHp < 0} className={css.pause} onClick={togglePause}>
+                        {isPaused ? 'Продолжить' : 'Остановить'}
+                    </button>
+                )}
             </div>
             <canvas ref={canvasRef} />
+            <div className={clsx(css.overlay, isGameStarted ? css.hideOverlay : '')} />
+            {!isGameStarted && (
+                <div className={clsx(css.loading, isGameStarted ? css.hideLoading : '')}>
+                    <h1>
+                        Loading Experience... <span id="progressPercentage" />%
+                    </h1>
+                    <button className={css.start} onClick={handleStartGame}>
+                        START
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
