@@ -30,8 +30,6 @@ export const InitialStats: HeroStats = {
 };
 
 export class Hero {
-    private readonly walkAction: AnimationAction | null = null;
-
     private mixer: AnimationMixer | null = null;
 
     private readonly animationsMap: Map<string, AnimationAction> = new Map();
@@ -92,7 +90,7 @@ export class Hero {
             if (this.hero) {
                 this.group.add(this.hero);
                 scene.add(this.group);
-                this.controls = new Controls(this, this.walkAction);
+                this.controls = new Controls(this);
                 this.initializeWeapons();
             }
         });
