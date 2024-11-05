@@ -13,8 +13,6 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { Weapon, WeaponType } from './Weapons/Weapon.ts';
 import { Controls } from './Controls/Controls.ts';
 
-export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
-
 export interface HeroStats {
     hp: number;
     maxHp: number;
@@ -53,6 +51,10 @@ export class Hero {
     public stats: HeroStats = InitialStats;
 
     public constructor(scene: Scene) {
+        this.loadModel(scene);
+    }
+
+    public loadModel(scene: Scene) {
         const loader = new GLTFLoader();
         loader.load('src/models/Soldier.glb', (gltf) => {
             const model = gltf.scene;
@@ -90,7 +92,7 @@ export class Hero {
             if (this.hero) {
                 this.group.add(this.hero);
                 scene.add(this.group);
-                this.controls = new Controls(this.hero, this.group, this.walkAction);
+                this.controls = new Controls(this, this.walkAction);
                 this.initializeWeapons();
             }
         });
@@ -112,8 +114,8 @@ export class Hero {
     }
 
     private initializeWeapons() {
-        // this.addWeapon(WeaponType.FireZone);
-        this.addWeapon(WeaponType.ElectricZone);
+        this.handleWeapon(WeaponType.ElectricZone);
+        // this.handleWeapon(WeaponType.FireZone);
     }
 
     private handleWeapon(type: WeaponType) {
@@ -126,15 +128,47 @@ export class Hero {
         }
     }
 
-    public addWeapon(type: WeaponType) {
-        this.handleWeapon(type);
+    public setRotation(angle: number) {
+        if (this.hero) {
+            this.hero.rotation.y = angle;
+        }
+    }
+
+    public setPosition(x: number, z: number) {
+        if (this.group) {
+            this.group.position.x = x;
+            this.group.position.z = z;
+            this.pos.copy(this.group.position);
+        }
+    }
+
+    public moveX(value: number) {
+        if (this.group) {
+            this.group.position.x += value;
+            this.pos.copy(this.group.position);
+        }
+    }
+
+    public moveZ(value: number) {
+        if (this.group) {
+            this.group.position.z += value;
+            this.pos.copy(this.group.position);
+        }
+    }
+
+    public getX(): number {
+        return this.group.position.x;
+    }
+
+    public getZ(): number {
+        return this.group.position.z;
     }
 
     public die() {
         if (this.animationsMap.has('mixamo.com')) {
             const deathAction = this.animationsMap.get('mixamo.com');
             if (deathAction) {
-                this.setAnimation('mixamo.com');
+                this.setMotionAnimation('mixamo.com');
                 deathAction.clampWhenFinished = true;
                 deathAction.loop = LoopOnce;
             }
@@ -147,7 +181,7 @@ export class Hero {
         return this.group.position;
     }
 
-    private setAnimation(name: string) {
+    private setMotionAnimation(name: string) {
         const newAction = this.animationsMap.get(name);
         if (newAction && this.activeAction !== newAction) {
             this.activeAction?.fadeOut(0.2);
@@ -169,9 +203,9 @@ export class Hero {
         }
 
         if (isMoving && this.activeAction?.getClip().name !== 'Walk') {
-            this.setAnimation('Walk');
+            this.setMotionAnimation('Walk');
         } else if (!isMoving && this.activeAction?.getClip().name !== 'Idle') {
-            this.setAnimation('Idle');
+            this.setMotionAnimation('Idle');
         }
 
         for (const weapon of this.weapons) {
