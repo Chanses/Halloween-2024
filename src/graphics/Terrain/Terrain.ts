@@ -1,13 +1,16 @@
 import {
+    Group,
     Material,
     Mesh,
     MeshBasicMaterial,
     MeshStandardMaterial,
+    Object3DEventMap,
     PlaneGeometry,
     Scene,
     Vector2,
     Vector3,
 } from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Enemies } from '../Enemies/Enemies';
 import { Consumable } from '../Combat/Consumable/Consumable.ts';
 import { Hero } from '../Hero/Hero';
@@ -34,11 +37,14 @@ export class Terrain {
 
     private readonly sectorMeshes: Map<string, Mesh[]> = new Map();
 
+    private treeModel: Group<Object3DEventMap> | null = null;
+
     public constructor(scene: Scene, hero: Hero) {
         this.scene = scene;
         this.consumable = new Consumable(scene, hero);
         this.medkit = new Medkit(scene, hero);
         this.generateSector(0, 0);
+        this.loadTreeModel();
     }
 
     private getSectorKey(x: number, y: number): string {
@@ -105,6 +111,10 @@ export class Terrain {
 
         this.consumable.generateExperience({ x, y });
         this.medkit.generateMedkits({ x, y });
+
+        if (this.treeModel) {
+            this.addTreesToSector(x, y);
+        }
     }
 
     private disposeSector(key: string) {
@@ -137,5 +147,35 @@ export class Terrain {
         this.medkit.dispose();
 
         Enemies.dispose();
+    }
+
+    private loadTreeModel() {
+        const loader = new GLTFLoader();
+        loader.load('src/models/mushroom__tree.glb', (gltf) => {
+            const model = gltf.scene;
+            model.traverse((object) => {
+                if (object) {
+                    object.castShadow = true;
+                    object.receiveShadow = true;
+                    object.scale.setScalar(1.2);
+                }
+            });
+            this.treeModel = model;
+        });
+    }
+
+    private addTreesToSector(x: number, y: number) {
+        const numTrees = 10;
+        const territorySize = SECTOR_SIZE;
+
+        for (let i = 0; i < numTrees; i++) {
+            const clone = this.treeModel?.clone();
+            if (clone) {
+                const offsetX = (Math.random() - 0.5) * territorySize;
+                const offsetZ = (Math.random() - 0.5) * territorySize;
+                clone.position.set(x + offsetX, 0, y + offsetZ);
+                this.scene.add(clone);
+            }
+        }
     }
 }

@@ -1,7 +1,19 @@
-import { AnimationAction, AnimationMixer, Mesh, Object3D, PointLight, Scene, Vector3 } from 'three';
+import {
+    AnimationAction,
+    AnimationMixer,
+    LoopOnce,
+    Mesh,
+    Object3D,
+    PointLight,
+    Scene,
+    Vector3,
+} from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 import { Weapon, WeaponType } from './Weapons/Weapon.ts';
 import { Controls } from './Controls/Controls.ts';
+
+export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
 export interface HeroStats {
     hp: number;
@@ -14,7 +26,7 @@ export interface HeroStats {
 export const InitialStats: HeroStats = {
     hp: 100,
     maxHp: 100,
-    speed: 0.5,
+    speed: 1.5,
     defend: 0,
     exp: 0,
 };
@@ -65,6 +77,16 @@ export class Hero {
                 }
             });
 
+            const fbxLoader = new FBXLoader();
+            fbxLoader.load('src/models/DeathAnimation.fbx', (fbx) => {
+                fbx.animations.forEach((clip) => {
+                    if (clip.name === 'mixamo.com') {
+                        const action = this.mixer!.clipAction(clip);
+                        this.animationsMap.set(clip.name, action);
+                    }
+                });
+            });
+
             if (this.hero) {
                 this.group.add(this.hero);
                 scene.add(this.group);
@@ -108,7 +130,18 @@ export class Hero {
         this.handleWeapon(type);
     }
 
-    public die() {}
+    public die() {
+        if (this.animationsMap.has('mixamo.com')) {
+            const deathAction = this.animationsMap.get('mixamo.com');
+            if (deathAction) {
+                this.setAnimation('mixamo.com');
+                deathAction.clampWhenFinished = true;
+                deathAction.loop = LoopOnce;
+            }
+        } else {
+            console.error('Death animation not found');
+        }
+    }
 
     public getPosition() {
         return this.group.position;
@@ -144,7 +177,7 @@ export class Hero {
         for (const weapon of this.weapons) {
             weapon.updateWeapon(delta);
         }
-        if (this.stats.hp < 0) {
+        if (this.stats.hp <= 0) {
             this.die();
         }
     }
