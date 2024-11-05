@@ -92,8 +92,6 @@ export class Levels {
         this.timer.clear();
 
         this.initializeEnemies();
-        // TODO после обновления здоровье не снимается
-        this.hero.stats.hp = this.hero.stats.maxHp;
         this.hero.reset();
 
         this.terrain = new Terrain(this.scene, this.hero);

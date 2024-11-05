@@ -112,14 +112,6 @@ export class Hero {
         }
     }
 
-    public setPosition(x: number, z: number) {
-        if (this.heroGroup) {
-            this.heroGroup.position.x = x;
-            this.heroGroup.position.z = z;
-            this.pos.copy(this.heroGroup.position);
-        }
-    }
-
     public moveX(value: number) {
         if (this.heroGroup) {
             this.heroGroup.position.x += value;
@@ -178,8 +170,9 @@ export class Hero {
                 }
             });
         }
-        this.stats = { ...InitialStats };
         this.setMotionAnimation('Idle');
+        this.stats = { ...InitialStats };
+        this.stats.hp = this.stats.maxHp;
     }
 
     public getPosition() {
