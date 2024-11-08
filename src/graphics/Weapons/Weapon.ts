@@ -4,6 +4,7 @@ export enum WeaponType {
     FireZone,
     BackShot,
     Sphere,
+    Throw,
 }
 
 export abstract class Weapon {

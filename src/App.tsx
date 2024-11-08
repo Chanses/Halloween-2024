@@ -23,9 +23,7 @@ function App() {
     return (
         <div className={css.wrapper}>
             <div className={css.info}>
-                <div className={css.info__time} ref={timeElRef}>
-                    asd
-                </div>
+                <div className={css.info__time} ref={timeElRef} />
                 <button className={css.pause} onClick={() => scene.current?.togglePause()}>
                     Toggle pause
                 </button>

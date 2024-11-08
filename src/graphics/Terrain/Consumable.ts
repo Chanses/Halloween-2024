@@ -63,7 +63,8 @@ export class Consumable {
         this.expSpheres.splice(idx, 1);
     }
 
-    public checkPickUp(pos: Vector3) {
+    public checkPickUp() {
+        const { pos } = Hero;
         this.expSpheres.forEach((mesh, idx) => {
             if (mesh.position.distanceTo(pos) < 1) {
                 this.pickExp(idx);

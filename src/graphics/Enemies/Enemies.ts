@@ -14,7 +14,7 @@ export interface Enemy {
 export class Enemies {
     private static readonly enemies: Enemy[] = [];
 
-    private static readonly genGap: number = 2500;
+    private static readonly genGap: number = 1500;
 
     private static genInt: number = 0;
 
@@ -46,7 +46,7 @@ export class Enemies {
         mesh.geometry.boundingBox!.getSize(box);
 
         const stats: Omit<Enemy, 'mesh'> = {
-            speed: 0.06,
+            speed: 0.1,
             hp: 100,
             damage: 1,
             maxHp: 100,
@@ -68,13 +68,14 @@ export class Enemies {
         }
     }
 
-    public static update(delta: number, hPos: Vector3) {
+    public static update(delta: number) {
+        const { pos } = Hero;
         this.enemies.forEach((enemy, idx) => {
             const { mesh, hp, maxHp, speed, damage } = enemy;
 
-            mesh.lookAt(hPos);
+            mesh.lookAt(pos);
             mesh.position.addScaledVector(
-                hPos.clone().sub(mesh.position).normalize(),
+                pos.clone().sub(mesh.position).normalize(),
                 speed * delta,
             );
 
@@ -84,7 +85,7 @@ export class Enemies {
                 this.killEnemy(idx);
             }
 
-            if (enemy.mesh.position.distanceTo(hPos) < 1) {
+            if (enemy.mesh.position.distanceTo(pos) < 1) {
                 Hero.getDamage(damage);
             }
         });

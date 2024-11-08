@@ -28,7 +28,7 @@ export class FireZone extends Weapon {
         const geo = new CircleGeometry(this.rad);
         this.mesh = new Mesh(geo, this.material);
         this.mesh.rotation.x = -Math.PI / 2;
-        this.mesh.position.y = -0.5;
+        this.mesh.position.y = -0.3;
     }
 
     public setActive() {

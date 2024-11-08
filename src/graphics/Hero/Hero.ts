@@ -4,6 +4,7 @@ import { Weapon, WeaponType } from '../Weapons/Weapon';
 import { FireZone } from '../Weapons/FireZone/FireZone';
 import { BackShot } from '../Weapons/BackShot/BackShot';
 import { Sphere } from '../Weapons/Sphere/Sphere';
+import { Throw } from '../Weapons/Throw/Throw';
 
 export const LEVELS = [100, 200, 300, 500, 800, 1200, 2000, 4000, 6000, 10000];
 
@@ -52,22 +53,25 @@ export class Hero {
     public static readonly stats: HeroStats = {
         hp: 100,
         maxHp: 100,
-        speed: 0.14,
+        speed: 0.1,
         defend: 0,
     };
 
     public constructor(scene: Scene) {
-        const geo = new BoxGeometry();
-        const mat = new MeshBasicMaterial({ wireframe: false, color: 'green' });
+        this.hero = new Mesh(new BoxGeometry(), new MeshBasicMaterial());
+        this.hero.castShadow = true;
 
-        this.hero = new Mesh(geo, mat);
         this.controls = new Controls(this.hero, this.group);
         this.group.add(this.hero);
+        this.loadAssets().then(() => {
+            scene.add(this.group);
+            // this.addWeapon(WeaponType.Throw);
+        });
+    }
 
-        scene.add(this.group);
-        this.addWeapon(WeaponType.Sphere);
-        this.addWeapon(WeaponType.FireZone);
-        this.addWeapon(WeaponType.BackShot);
+    private async loadAssets() {
+        // const loader = new GLTFLoader();
+        // const model = (await loader.loadAsync(modelGlb)).scene as Group;
     }
 
     /**
@@ -105,6 +109,12 @@ export class Hero {
             case WeaponType.Sphere:
                 {
                     const weapon = new Sphere(this.group);
+                    this.handleWeapon(weapon);
+                }
+                break;
+            case WeaponType.Throw:
+                {
+                    const weapon = new Throw(this.group);
                     this.handleWeapon(weapon);
                 }
                 break;
