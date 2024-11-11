@@ -262,7 +262,7 @@ export class Controls {
      * @private
      */
     private updateMovement() {
-        const speed = 0.065;
+        const speed = 0.1;
 
         switch (this.direction) {
             case Direction.Top:

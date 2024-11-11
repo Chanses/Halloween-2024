@@ -18,6 +18,9 @@ import { Consumable } from './Consumable/Consumable';
 import { Medkit } from './Medkit/Medkit.ts';
 import { Preloader } from './UI/Preloader.ts';
 
+// import sources from '../sources.ts';
+// import Resources from './Utils/Resources.ts';
+
 const CAMERA_POSITION = new Vector3(0, 15, 0);
 const LIGHT_POSITION = new Vector3(50, 50, 50);
 const CAMERA_FOLLOW_OFFSET = new Vector3(0, 16, 8);
@@ -58,6 +61,8 @@ export class Main {
 
     private readonly preloader: Preloader;
 
+    // private readonly resources: Resources;
+
     public constructor(
         canvas: HTMLCanvasElement,
         timeEl: HTMLDivElement,
@@ -77,7 +82,7 @@ export class Main {
         this.scene.fog = new FogExp2('#04343f', 0.04);
 
         this.ambLight = new AmbientLight('#596987', 10);
-
+        // this.resources = new Resources(sources);
         this.preloader = new Preloader();
         this.preloader.setOnProgress((progress: number) => {
             const progressElement = document.getElementById('progressPercentage');
